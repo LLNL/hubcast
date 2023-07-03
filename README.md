@@ -1,9 +1,10 @@
 # Hubcast
 
-Hubcast is a event driven synchronization application for bridging GitHub and GitLab. It automates various workflow tasks and handles jobs like:
+Hubcast is an event driven synchronization application for bridging GitHub and GitLab. It automates various workflow tasks and handles jobs like:
 
 - Syncing branches from GitHub to GitLab.
 - Reporting CI job statuses back to GitHub from GitLab Workflow Runs.
+
 
 ## License
 
