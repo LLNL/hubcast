@@ -2,8 +2,7 @@ import os
 import re
 from typing import Any
 
-from gidgetlab import routing
-from gidgetlab import sansio
+from gidgetlab import routing, sansio
 
 GH_REPO = os.environ.get("HC_GH_REPO")
 GH_CHECK_NAME = os.environ.get("HC_GH_CHECK_NAME")

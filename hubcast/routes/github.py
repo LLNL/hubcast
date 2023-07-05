@@ -1,8 +1,7 @@
 import asyncio
 from typing import Any
 
-from gidgethub import routing
-from gidgethub import sansio
+from gidgethub import routing, sansio
 
 from ..utils.git import git
 
@@ -38,6 +37,7 @@ async def sync_pr(event, gh, *arg, **kwargs):
         git(f"push gitlab FETCH_HEAD:refs/heads/pr-{pull_request_id}")
     finally:
         repo_lock.release()
+
 
 @router.register("pull_request", action="closed")
 async def remove_pr(event, gh, *arg, **kwargs):

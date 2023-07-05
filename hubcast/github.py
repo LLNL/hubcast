@@ -7,11 +7,9 @@ import traceback
 import aiohttp
 from aiohttp import web
 from gidgethub import aiohttp as gh_aiohttp
-from gidgethub import routing
-from gidgethub import sansio
+from gidgethub import routing, sansio
 
-from .auth.github import authenticate_installation
-from .auth.github import get_installation_id
+from .auth.github import authenticate_installation, get_installation_id
 from .routes.github import router
 
 # Get configuration from environment

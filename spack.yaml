@@ -4,34 +4,10 @@
 # configuration settings.
 spack:
   # add package specs to the `specs` list
-  specs: [node-js, python, py-pip, py-setuptools, npm]
+  specs:
+  - python
+  - py-pip
+  - py-setuptools
   view: true
   concretizer:
     unify: true
-  compilers:
-  - compiler:
-      spec: apple-clang@14.0.0
-      paths:
-        cc: /usr/bin/clang
-        cxx: /usr/bin/clang++
-        f77: null
-        fc: null
-      flags: {}
-      operating_system: monterey
-      target: x86_64
-      modules: []
-      environment: {}
-      extra_rpaths: []
-  - compiler:
-      spec: cce@14.0.0
-      paths:
-        cc: /usr/bin/cc
-        cxx: null
-        f77: null
-        fc: null
-      flags: {}
-      operating_system: monterey
-      target: x86_64
-      modules: []
-      environment: {}
-      extra_rpaths: []

@@ -8,11 +8,9 @@ import aiohttp
 from aiohttp import web
 from gidgethub import aiohttp as gh_aiohttp
 from gidgetlab import aiohttp as gl_aiohttp
-from gidgetlab import routing
-from gidgetlab import sansio
+from gidgetlab import routing, sansio
 
-from .auth.github import authenticate_installation
-from .auth.github import get_installation_id
+from .auth.github import authenticate_installation, get_installation_id
 from .routes.gitlab import router
 
 # Get configuration from environment
