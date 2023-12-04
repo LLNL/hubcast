@@ -6,8 +6,11 @@ spack:
   # add package specs to the `specs` list
   specs:
   - python
-  - py-pip
-  - py-setuptools
+  - py-aiohttp
+  - py-cachetools
+  # - py-gidgethub
+  # - py-gidgetlab
+  - smee-client
   view: true
   concretizer:
     unify: true
