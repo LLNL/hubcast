@@ -35,6 +35,7 @@ jobs:
             style:
               - '.github/**'
               - 'hubcast/**'
+              - 'pyproject.toml'
 
   style:
     if: ${{ needs.changes.outputs.style == 'true' }}
