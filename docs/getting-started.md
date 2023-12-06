@@ -66,7 +66,7 @@ If you don't already have a GitHub repository you'd like to mirror, you'll
 need to create a new repository. (When setting up Hubcast for the first time
 it may be a good idea to test it first on a test repository.)
 
-> [TIP]
+> [!TIP]
 > If you're setting up a local instance of Hubcast to develop on we recommend
 > setting up a hubcast-test repository to test out your changes before
 > submitting a PR. To create a test repository click
@@ -123,7 +123,7 @@ export HC_GH_APP_IDENTIFIER=
 If you don't already have a GitLab repository you'd like to mirror into,
 we'll need to create one at this point.
 
-> [TIP]
+> [!TIP]
 > If you're setting up a local instance of Hubcast to develop on we recommend
 > setting up a hubcast-test repository to test out your changes before
 > submitting a PR. To create a test repository on GitLab.com click
@@ -144,7 +144,7 @@ $ openssl rand -base64 24
 One you've got those two values you can follow GitLab's instructions in the
 [Webhooks docs](https://docs.gitlab.com/ee/user/project/integrations/webhooks.html#configure-a-webhook-in-gitlab).
 
-> [TIP]
+> [!TIP]
 > Make sure to set the webhook to trigger on both `job events` and `pipeline events`.
 
 ### Creating a GitLab Project Access Token
@@ -152,7 +152,7 @@ Finally to access the GitLab API we'll need to create Project Access Token
 inside the repository by following the instructions
 [here](https://docs.gitlab.com/ee/user/project/settings/project_access_tokens.html#create-a-project-access-token).
 
-> [TIP]
+> [!TIP]
 > To ensure Hubcast can opperate sucessfully you'll need to give the following permissions
 > to the project access token,
 > - `read_api`
