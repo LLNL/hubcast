@@ -22,6 +22,9 @@ dependencies = [
 ]
 dynamic = ["version"]
 
+[project.optional-dependencies]
+dev = ["pytest", "pytest-asyncio"]
+
 [tool.black]
 target-version = ["py38", "py39", "py310", "py311"]
 color = true
