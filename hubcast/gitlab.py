@@ -1,5 +1,3 @@
-import asyncio
-import importlib
 import os
 import sys
 import traceback
@@ -8,7 +6,7 @@ import aiohttp
 from aiohttp import web
 from gidgethub import aiohttp as gh_aiohttp
 from gidgetlab import aiohttp as gl_aiohttp
-from gidgetlab import routing, sansio
+from gidgetlab import sansio
 
 from .auth.github import authenticate_installation, get_installation_id
 from .routes.gitlab import router
@@ -35,10 +33,12 @@ async def gitlab(request):
         gh_token = await authenticate_installation(gh_installation_id)
 
         async with aiohttp.ClientSession() as session:
-            gh = gh_aiohttp.GitHubAPI(session, GH_REQUESTER, oauth_token=gh_token)
+            gh = gh_aiohttp.GitHubAPI(
+                    session, GH_REQUESTER, oauth_token=gh_token
+                )
             gl = gl_aiohttp.GitLabAPI(
-                session, GL_REQUESTER, access_token=GL_ACCESS_TOKEN
-            )
+                    session, GL_REQUESTER, access_token=GL_ACCESS_TOKEN
+                )
 
             # call the appropriate callback for the event
             await router.dispatch(event, gh, gl, session=session)
@@ -46,6 +46,6 @@ async def gitlab(request):
         # return a "Success"
         return web.Response(status=200)
 
-    except Exception as exc:
+    except Exception:
         traceback.print_exc(file=sys.stderr)
         return web.Response(status=500)

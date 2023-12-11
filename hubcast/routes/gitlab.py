@@ -14,7 +14,9 @@ class HubCastRouter(routing.Router):
     Custom router to handle common interactions for hubcast
     """
 
-    async def dispatch(self, event: sansio.Event, *args: Any, **kwargs: Any) -> None:
+    async def dispatch(
+            self, event: sansio.Event, *args: Any, **kwargs: Any
+            ) -> None:
         """Dispatch an event to all registered function(s)."""
 
         found_callbacks = []
@@ -39,8 +41,8 @@ class HubCastRouter(routing.Router):
 router = HubCastRouter()
 
 # set owner & repo values from config
-owner = re.search("(?<=\:)[^\/]*", GH_REPO, re.IGNORECASE).group()
-repo = re.search("(?<=\/)[^.]*", GH_REPO, re.IGNORECASE).group()
+owner = re.search(r"(?<=\:)[^\/]*", GH_REPO, re.IGNORECASE).group()
+repo = re.search(r"(?<=\/)[^.]*", GH_REPO, re.IGNORECASE).group()
 
 
 @router.register("Pipeline Hook", status="pending")

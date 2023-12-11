@@ -12,7 +12,9 @@ class LabSyncRouter(routing.Router):
     Custom router to handle common interactions for labsync
     """
 
-    async def dispatch(self, event: sansio.Event, *args: Any, **kwargs: Any) -> None:
+    async def dispatch(
+            self, event: sansio.Event, *args: Any, **kwargs: Any
+            ) -> None:
         """Dispatch an event to all registered function(s)."""
 
         found_callbacks = self.fetch(event)
