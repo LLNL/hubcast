@@ -1,13 +1,7 @@
 import pytest
-from dataclasses import dataclass
 from unittest import mock
 
 from hubcast.routes import github
-
-
-@dataclass
-class Event:
-    data: dict
 
 
 @pytest.fixture
@@ -18,8 +12,9 @@ def pr_number():
 @pytest.fixture
 def pr_event_factory():
     def _factory(number):
-        data = {"pull_request": {"number": number}}
-        return Event(data=data)
+        event = mock.Mock()
+        event.data = {"pull_request": {"number": number}}
+        return event
 
     return _factory
 
