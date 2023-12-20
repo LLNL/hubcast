@@ -23,7 +23,10 @@ dependencies = [
 dynamic = ["version"]
 
 [project.optional-dependencies]
-dev = ["pytest", "pytest-asyncio"]
+dev = [
+    "pytest",
+    "pytest-asyncio",
+]
 
 [tool.black]
 target-version = ["py38", "py39", "py310", "py311"]
@@ -66,13 +69,22 @@ include = ["hubcast*"]
 
 [tool.pytest.ini_options]
 asyncio_mode = "auto"
+norecursedirs = [
+    "__pycache__",
+    ".spack-env",
+]
+testpaths = [
+    "tests",
+    "docs/tutorials",
+]
+tmp_path_retention_policy = "failed"
 
 [tool.tox]
 legacy_tox_ini = """
-    [tox]
-    envlist = py311
+[tox]
+envlist = py311
 
-    [testenv]
-    extras = dev
-    commands = pytest -s tests
+[testenv]
+extras = dev
+commands = pytest
 """
