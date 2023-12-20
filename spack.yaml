@@ -10,7 +10,6 @@ spack:
   - py-cachetools
   - py-gidgethub
   - py-gidgetlab
-  - py-tox
   - py-pytest
   - py-pytest-asyncio
   - smee-client
