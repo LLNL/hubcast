@@ -46,5 +46,5 @@ jobs:
 
   unit-tests:
     if: ${{ needs.changes.outputs.unit-tests == 'true' }}
-    needs: changes
+    needs: [changes, style]
     uses: ./.github/workflows/unit-tests.yml
