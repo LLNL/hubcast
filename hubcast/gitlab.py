@@ -34,7 +34,9 @@ async def gitlab(request):
 
         async with aiohttp.ClientSession() as session:
             gh = gh_aiohttp.GitHubAPI(session, GH_REQUESTER, oauth_token=gh_token)
-            gl = gl_aiohttp.GitLabAPI(session, GL_REQUESTER, access_token=GL_ACCESS_TOKEN)
+            gl = gl_aiohttp.GitLabAPI(
+                    session, GL_REQUESTER, access_token=GL_ACCESS_TOKEN
+            )
 
             # call the appropriate callback for the event
             await router.dispatch(event, gh, gl, session=session)
