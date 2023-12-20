@@ -22,6 +22,9 @@ dependencies = [
 ]
 dynamic = ["version"]
 
+[project.optional-dependencies]
+dev = ["pytest", "pytest-asyncio"]
+
 [tool.black]
 target-version = ["py38", "py39", "py310", "py311"]
 color = true
@@ -60,3 +63,16 @@ hubcast = ["py.typed"]
 
 [tool.setuptools.packages.find]
 include = ["hubcast*"]
+
+[tool.pytest.ini_options]
+asyncio_mode = "auto"
+
+[tool.tox]
+legacy_tox_ini = """
+    [tox]
+    envlist = py311
+
+    [testenv]
+    extras = dev
+    commands = pytest -s tests
+"""
