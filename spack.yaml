@@ -8,8 +8,11 @@ spack:
   - python
   - py-aiohttp
   - py-cachetools
-  # - py-gidgethub
-  # - py-gidgetlab
+  - py-gidgethub
+  - py-gidgetlab
+  - py-tox
+  - py-pytest
+  - py-pytest-asyncio
   - smee-client
   view: true
   concretizer:

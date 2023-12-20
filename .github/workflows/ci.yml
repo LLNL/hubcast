@@ -17,10 +17,8 @@ jobs:
     permissions:
       pull-requests: read
     outputs:
-      docs: ${{ steps.filter.outputs.docs }}
       style: ${{ steps.filter.outputs.style }}
-      run: ${{ steps.filter.outputs.run }}
-
+      unit-tests: ${{ steps.filter.outputs.unit-tests }}
     steps:
       - uses: actions/checkout@b4ffde65f46336ab88eb53be808477a3936bae11 # @v2
         if: ${{ github.event_name == 'push' }}
@@ -36,27 +34,17 @@ jobs:
               - '.github/**'
               - 'hubcast/**'
               - 'pyproject.toml'
+            unit-tests:
+              - '.github/**'
+              - 'hubcast/**'
+              - 'pyproject.toml'
 
   style:
     if: ${{ needs.changes.outputs.style == 'true' }}
     needs: changes
     uses: ./.github/workflows/style.yml
-  test:
-    runs-on: ubuntu-latest
-    needs: style
-    strategy:
-      matrix:
-        python-version: ['3.8', '3.11']
-    permissions:
-      pull-requests: read
-    steps:
-      - uses: actions/checkout@v4
-      - uses: actions/setup-python@v4
-        with:
-          python-version: ${{ matrix.python-version }}
-      - name: Install test dependencies
-        run: |
-          pip install --upgrade pip tox
-      - name: Test with tox
-        run: |
-          tox -e ${{ matrix.python-version }}
+
+  unit-tests:
+    if: ${{ needs.changes.outputs.unit-tests == 'true' }}
+    needs: changes
+    uses: ./.github/workflows/unit-tests.yml
