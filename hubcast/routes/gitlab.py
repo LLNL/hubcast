@@ -14,9 +14,7 @@ class HubCastRouter(routing.Router):
     Custom router to handle common interactions for hubcast
     """
 
-    async def dispatch(
-            self, event: sansio.Event, *args: Any, **kwargs: Any
-            ) -> None:
+    async def dispatch(self, event: sansio.Event, *args: Any, **kwargs: Any) -> None:
         """Dispatch an event to all registered function(s)."""
 
         found_callbacks = []

@@ -100,16 +100,8 @@ async def get_jwt():
 class IDStore:
     def __init__(self):
         self.id = None
-        self.owner = re.search(
-                r"(?<=\:)[^\/]*",
-                GH_REPO,
-                re.IGNORECASE
-                ).group()
-        self.repo = re.search(
-                r"(?<=\/)[^.]*",
-                GH_REPO,
-                re.IGNORECASE
-                ).group()
+        self.owner = re.search(r"(?<=\:)[^\/]*", GH_REPO, re.IGNORECASE).group()
+        self.repo = re.search(r"(?<=\/)[^.]*", GH_REPO, re.IGNORECASE).group()
 
     async def get_id(self):
         if self.id is None:

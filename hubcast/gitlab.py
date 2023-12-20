@@ -33,12 +33,8 @@ async def gitlab(request):
         gh_token = await authenticate_installation(gh_installation_id)
 
         async with aiohttp.ClientSession() as session:
-            gh = gh_aiohttp.GitHubAPI(
-                    session, GH_REQUESTER, oauth_token=gh_token
-                )
-            gl = gl_aiohttp.GitLabAPI(
-                    session, GL_REQUESTER, access_token=GL_ACCESS_TOKEN
-                )
+            gh = gh_aiohttp.GitHubAPI(session, GH_REQUESTER, oauth_token=gh_token)
+            gl = gl_aiohttp.GitLabAPI(session, GL_REQUESTER, access_token=GL_ACCESS_TOKEN)
 
             # call the appropriate callback for the event
             await router.dispatch(event, gh, gl, session=session)
