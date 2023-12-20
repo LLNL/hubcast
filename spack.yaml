@@ -12,6 +12,8 @@ spack:
   - py-gidgetlab
   - py-pytest
   - py-pytest-asyncio
+  - py-flake8
+  - py-black
   - smee-client
   view: true
   concretizer:
