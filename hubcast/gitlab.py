@@ -1,5 +1,3 @@
-import asyncio
-import importlib
 import os
 import sys
 import traceback
@@ -8,7 +6,7 @@ import aiohttp
 from aiohttp import web
 from gidgethub import aiohttp as gh_aiohttp
 from gidgetlab import aiohttp as gl_aiohttp
-from gidgetlab import routing, sansio
+from gidgetlab import sansio
 
 from .auth.github import authenticate_installation, get_installation_id
 from .routes.gitlab import router
@@ -46,6 +44,6 @@ async def gitlab(request):
         # return a "Success"
         return web.Response(status=200)
 
-    except Exception as exc:
+    except Exception:
         traceback.print_exc(file=sys.stderr)
         return web.Response(status=500)

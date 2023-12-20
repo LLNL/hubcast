@@ -39,8 +39,8 @@ class HubCastRouter(routing.Router):
 router = HubCastRouter()
 
 # set owner & repo values from config
-owner = re.search("(?<=\:)[^\/]*", GH_REPO, re.IGNORECASE).group()
-repo = re.search("(?<=\/)[^.]*", GH_REPO, re.IGNORECASE).group()
+owner = re.search(r"(?<=\:)[^\/]*", GH_REPO, re.IGNORECASE).group()
+repo = re.search(r"(?<=\/)[^.]*", GH_REPO, re.IGNORECASE).group()
 
 
 @router.register("Pipeline Hook", status="pending")

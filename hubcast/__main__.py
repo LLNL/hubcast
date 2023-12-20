@@ -1,10 +1,4 @@
-import asyncio
-import importlib
 import os
-import sys
-import traceback
-
-import aiohttp
 from aiohttp import web
 
 from .github import github
