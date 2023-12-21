@@ -10,7 +10,7 @@
 **[Features]   •   [Getting Started]   •   [Config]   •   [Contributing]   •   [Changelog]**
 
 [Features]: #features
-[Installation]: /docs/getting-started.md
+[Getting Started]: /docs/getting-started.md
 [Config]: /docs/getting-started.md
 [Contributing]: /docs/CONTRIBUTING.md
 [Changelog]: /releases
