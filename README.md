@@ -1,4 +1,21 @@
+<div>
+<h1>
 <img src="logo/logo.svg" width="400" alt="Hubcast logo"/>
+<br clear="all">
+<a href="https://github.com/llnl/hubcast/releases"><img src="https://img.shields.io/github/v/tag/llnl/bfs?label=version" alt="Version" align="right"></a>
+<a href="/LICENSE"><img src="https://img.shields.io/github/license/llnl/hubcast" alt="License" align="right"></a>
+<a href="https://github.com/llnl/hubcast/actions/workflows/ci.yml"><img src="https://github.com/llnl/hubcast/actions/workflows/ci.yml/badge.svg" alt="CI Status" align="right"></a>
+</h1>
+
+**[Features]   •   [Getting Started]   •   [Config]   •   [Contributing]   •   [Changelog]**
+
+[Features]: #features
+[Installation]: /docs/getting-started.md
+[Config]: /docs/getting-started.md
+[Contributing]: /docs/CONTRIBUTING.md
+[Changelog]: /releases
+
+</div>
 
 Hubcast is an event driven synchronization application for bridging GitHub and GitLab. It automates various workflow tasks and handles jobs like:
 
