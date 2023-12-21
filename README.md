@@ -1,4 +1,4 @@
-# Hubcast
+<img src="logo/logo.svg" width="400" alt="Hubcast logo"/>
 
 Hubcast is an event driven synchronization application for bridging GitHub and GitLab. It automates various workflow tasks and handles jobs like:
 
