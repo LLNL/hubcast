@@ -7,7 +7,7 @@
 <a href="https://github.com/llnl/hubcast/actions/workflows/ci.yml"><img src="https://github.com/llnl/hubcast/actions/workflows/ci.yml/badge.svg" alt="CI Status" align="right"></a>
 </h1>
 
-<pre>**[Features]   •   [Getting Started]   •   [Config]   •   [Contributing]   •   [Changelog]**</pre>
+**[Features]&nbsp;&nbsp;&nbsp;•&nbsp;&nbsp;&nbsp;[Getting Started]&nbsp;&nbsp;&nbsp;•&nbsp;&nbsp;&nbsp;[Config]&nbsp;&nbsp;&nbsp;•&nbsp;&nbsp;&nbsp;[Contributing]&nbsp;&nbsp;&nbsp;•&nbsp;&nbsp;&nbsp;[Changelog]**
 
 [Features]: #features
 [Getting Started]: /docs/getting-started.md
