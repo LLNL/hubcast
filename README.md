@@ -4,7 +4,7 @@
 <br clear="all">
 </h1>
 
-**[Features]&nbsp;&nbsp;&nbsp;•&nbsp;&nbsp;&nbsp;[Getting Started]&nbsp;&nbsp;&nbsp;•&nbsp;&nbsp;&nbsp;[Config]&nbsp;&nbsp;&nbsp;•&nbsp;&nbsp;&nbsp;[Contributing]&nbsp;&nbsp;&nbsp;•&nbsp;&nbsp;&nbsp;[Changelog]**
+**[Features] &nbsp; • &nbsp; [Getting Started] &nbsp; • &nbsp; [Config] &nbsp; • &nbsp; [Contributing] &nbsp; • &nbsp; [Changelog]**
 
 [Features]: #features
 [Getting Started]: /docs/getting-started.md
