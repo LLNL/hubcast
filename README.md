@@ -10,7 +10,7 @@
 [Getting Started]: /docs/getting-started.md
 [Config]: /docs/getting-started.md
 [Contributing]: /docs/CONTRIBUTING.md
-[Changelog]: /releases
+[Changelog]: https://github.com/LLNL/hubcast/releases
 
 </div>
 
