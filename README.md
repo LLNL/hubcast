@@ -1,4 +1,18 @@
-# Hubcast
+<div align="center">
+<h1>
+<img src="logo/logo.svg" width="400" alt="Hubcast logo"/>
+<br clear="all">
+</h1>
+
+**[Features]&nbsp;&nbsp;&nbsp;•&nbsp;&nbsp;&nbsp;[Getting Started]&nbsp;&nbsp;&nbsp;•&nbsp;&nbsp;&nbsp;[Config]&nbsp;&nbsp;&nbsp;•&nbsp;&nbsp;&nbsp;[Contributing]&nbsp;&nbsp;&nbsp;•&nbsp;&nbsp;&nbsp;[Changelog]**
+
+[Features]: #features
+[Getting Started]: /docs/getting-started.md
+[Config]: /docs/getting-started.md
+[Contributing]: /docs/CONTRIBUTING.md
+[Changelog]: /releases
+
+</div>
 
 Hubcast is an event driven synchronization application for bridging GitHub and GitLab. It automates various workflow tasks and handles jobs like:
 
