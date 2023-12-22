@@ -153,7 +153,7 @@ inside the repository by following the instructions
 [here](https://docs.gitlab.com/ee/user/project/settings/project_access_tokens.html#create-a-project-access-token).
 
 > [!TIP]
-> To ensure Hubcast can opperate sucessfully you'll need to give the following permissions
+> To ensure Hubcast can operate successfully you'll need to give the following permissions
 > to the project access token,
 > - `read_api`
 > - `read_repository`

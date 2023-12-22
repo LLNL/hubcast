@@ -6,7 +6,7 @@ to reach out and ask for help when getting started.
 
 For small changes (e.g. bug fixes), feel free to submit a PR.
 
-For larger architectual changes and new features, consider opening an
+For larger architectural changes and new features, consider opening an
 [issue](https://github.com/LLNL/hubcast/issues/new?template=issue-feature-request.md) outlining your
 proposed contribution.
 
