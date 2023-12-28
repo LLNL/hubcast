@@ -7,7 +7,9 @@ spack:
   specs:
   - python
   - py-aiohttp
+  - py-attrs
   - py-cachetools
+  - py-dynaconf
   - py-gidgethub
   - py-gidgetlab
   - py-pytest

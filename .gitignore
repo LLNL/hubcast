@@ -3,3 +3,6 @@ __pycache__
 spack.lock
 .spack-env
 *.pem
+
+# Ignore dynaconf secret files
+.secrets.*
