@@ -169,7 +169,7 @@ async def test_authenticate_installation(
     mock_gh.post = mock.AsyncMock()
     mock_gh.post.return_value = {
         "token": access_token,
-        "expires_at": iso_8601_timestamp
+        "expires_at": iso_8601_timestamp,
     }
     mock_gh.getitem = mock.AsyncMock()
     mock_gh.getitem.return_value = {"id": installation_id}
