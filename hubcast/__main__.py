@@ -1,21 +1,21 @@
 import os
 from aiohttp import web
 
+from .config import settings
 from .github import github
 from .gitlab import gitlab
-from .utils.git import git
-
-# Get configuration from environment
-GIT_REPO_PATH = os.environ.get("HC_GIT_REPO_PATH")
-GH_REPO = os.environ.get("HC_GH_REPO")
-GL_REPO = os.environ.get("HC_GL_REPO")
-PORT = os.environ.get("HC_PORT")
+from .utils.git import Git
 
 
-async def main(request):
+github_settings = settings.github.to_dict()
+git_settings = settings.git.to_dict()
+git = Git(config=git_settings)
+
+
+async def main(request) -> web.Response:
     # route request to github or gitlab submodule based on event type header
     if "x-github-event" in request.headers:
-        return await github(request)
+        return await github(request, github_settings, git_settings)
     elif "x-gitlab-event" in request.headers:
         return await gitlab(request)
     else:
@@ -25,16 +25,14 @@ async def main(request):
 if __name__ == "__main__":
     print("Initializing hubcast ...")
     print("Configuring Git Repository ...")
-    if not os.path.exists(GIT_REPO_PATH):
-        os.makedirs(GIT_REPO_PATH)
+    if not os.path.exists(settings.git.repo_path):
+        os.makedirs(settings.git.repo_path)
         git("init")
-        git(f"remote add github {GH_REPO}")
-        git(f"remote add gitlab {GL_REPO}")
+        git(f"remote add github {settings.github.repo}")
+        git(f"remote add gitlab {settings.gitlab.repo}")
 
     print("Starting Web Server...")
     app = web.Application()
     app.router.add_post("/", main)
-    if PORT is not None:
-        PORT = int(PORT)
 
-    web.run_app(app, port=PORT)
+    web.run_app(app, port=settings.hubcast.port)

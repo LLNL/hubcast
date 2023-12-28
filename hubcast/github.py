@@ -33,7 +33,7 @@ async def github(request):
             gh = gh_aiohttp.GitHubAPI(session, GH_REQUESTER, oauth_token=token)
 
             # call the appropriate callback for the event
-            await router.dispatch(event, gh, session=session)
+            await router.dispatch(event, gh, git_config, session=session)
 
         # return a "Success"
         return web.Response(status=200)

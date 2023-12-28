@@ -19,15 +19,25 @@ def pr_event_factory():
     return _factory
 
 
-@mock.patch("hubcast.routes.github.git")
-async def test_github_sync_pr(mock_git, pr_number, pr_event_factory):
+@pytest.fixture
+def mock_git_config():
+    return {"repo_path": "/"}
+
+
+@pytest.fixture
+def mock_git():
+    with mock.patch("hubcast.routes.github.Git") as MockGit:
+        yield MockGit.return_value
+
+
+async def test_github_sync_pr(mock_git_config, mock_git, pr_number, pr_event_factory):
     # Setup
     event = pr_event_factory(pr_number)
 
     # Execute
-    await github.sync_pr(event, mock.Mock())
+    await github.sync_pr(event, mock.Mock(), mock_git_config)
 
-    # Assert
+    # Verify
     mock_git.assert_has_calls(
         [
             mock.call(f"fetch github pull/{pr_number}/head"),
@@ -36,13 +46,12 @@ async def test_github_sync_pr(mock_git, pr_number, pr_event_factory):
     )
 
 
-@mock.patch("hubcast.routes.github.git")
-async def test_github_remove_pr(mock_git, pr_number, pr_event_factory):
+async def test_github_remove_pr(mock_git_config, mock_git, pr_number, pr_event_factory):
     # Setup
     event = pr_event_factory(pr_number)
 
     # Execute
-    await github.remove_pr(event, mock.Mock())
+    await github.remove_pr(event, mock.Mock(), mock_git_config)
 
-    # Assert
+    # Verify
     mock_git.assert_called_once_with(f"push -d gitlab refs/heads/pr-{pr_number}")

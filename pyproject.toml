@@ -16,6 +16,8 @@ maintainers = [
 keywords = ["github", "gitlab", "mirroring", "ci"]
 dependencies = [
     "aiohttp",
+    "attrs",
+    "dynaconf",
     "cachetools",
     "gidgethub",
     "gidgetlab",

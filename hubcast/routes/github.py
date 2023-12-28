@@ -3,7 +3,7 @@ from typing import Any
 
 from gidgethub import routing, sansio
 
-from ..utils.git import git
+from ..utils.git import Git
 
 
 class LabSyncRouter(routing.Router):
@@ -27,8 +27,9 @@ repo_lock = asyncio.Lock()
 @router.register("pull_request", action="opened")
 @router.register("pull_request", action="reopened")
 @router.register("pull_request", action="synchronize")
-async def sync_pr(event, gh, *arg, **kwargs):
+async def sync_pr(event, gh, git_config, *arg, **kwargs):
     """Sync the git fork/branch referenced in a PR to GitLab."""
+    git = Git(config=git_config)
     pull_request = event.data["pull_request"]
     pull_request_id = pull_request["number"]
     await repo_lock.acquire()
@@ -40,7 +41,8 @@ async def sync_pr(event, gh, *arg, **kwargs):
 
 
 @router.register("pull_request", action="closed")
-async def remove_pr(event, gh, *arg, **kwargs):
+async def remove_pr(event, gh, git_config, *arg, **kwargs):
+    git = Git(config=git_config)
     pull_request = event.data["pull_request"]
     pull_request_id = pull_request["number"]
     await repo_lock.acquire()
