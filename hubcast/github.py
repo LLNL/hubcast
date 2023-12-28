@@ -14,7 +14,7 @@ from .routes.github import router
 
 @define
 class AppCache:
-    _apps: Dict[str, App] = field()
+    _apps: Dict[str, App] = field(factory=dict)
 
     def get_app(self, app_id: str, config: dict) -> App:
         if not self._apps[app_id]:
