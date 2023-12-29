@@ -1,3 +1,4 @@
+aiohttp==3.9.1
 attrs==23.1.0
 dynaconf==3.2.4
 tox==4.11.4
