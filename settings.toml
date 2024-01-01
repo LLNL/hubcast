@@ -6,7 +6,7 @@ dynaconf_merge = true
 port = 8080
 
 [default.git]
-repo_path = "/tmp"
+base_path = "/tmp"
 
 [default.github]
 repo = ""

@@ -20,19 +20,19 @@ def remote_url():
 
 
 @pytest.fixture
-def repo_path(tmp_path):
+def base_path(tmp_path):
     return str(tmp_path)
 
 
 @pytest.fixture
-def git(repo_path):
-    return Git(config={"repo_path": repo_path})
+def git(base_path):
+    return Git(config={"base_path": base_path})
 
 
-def test_basic_repo_operations(git, repo_path, remote_name, remote_url):
+def test_basic_repo_operations(git, base_path, remote_name, remote_url):
     # Setup
     config = ConfigParser()
-    config_path = f"{repo_path}/.git/config"
+    config_path = f"{base_path}/.git/config"
 
     # Execute
     git("init")
