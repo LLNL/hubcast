@@ -25,9 +25,7 @@ def make_github_client(
     # retrieve GitHub authentication token
     gh_token = await authenticate_installation(github_config)
 
-    return gh_aiohttp.GitHubAPI(
-        session, github_config.requester, oauth_token=gh_token
-    )
+    return gh_aiohttp.GitHubAPI(session, github_config.requester, oauth_token=gh_token)
 
 
 def make_gitlab_client(
