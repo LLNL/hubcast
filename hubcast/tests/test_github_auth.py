@@ -54,7 +54,7 @@ async def test_get_jwt(
     hubcast_repo = hubcast_repo_factory(config)
 
     # Execute
-    actual_jwt = await get_jwt(hubcast_repo)
+    actual_jwt = await get_jwt(hubcast_repo.github_config)
 
     # Verify
     assert actual_jwt == jwt
@@ -82,7 +82,7 @@ async def test_get_installation_id(
     hubcast_repo = hubcast_repo_factory(config)
 
     # Execute
-    actual_installation_id = await get_installation_id(hubcast_repo)
+    actual_installation_id = await get_installation_id(hubcast_repo.github_config)
 
     # Verify
     assert actual_installation_id == installation_id
@@ -121,7 +121,7 @@ async def test_authenticate_installation(
     hubcast_repo.github_config.installation_id = installation_id
 
     # Execute
-    actual_access_token = await authenticate_installation(hubcast_repo)
+    actual_access_token = await authenticate_installation(hubcast_repo.github_config)
 
     # Verify
     assert actual_access_token == access_token

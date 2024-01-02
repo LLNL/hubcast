@@ -6,7 +6,7 @@ from attrs import define, field
 from gidgethub import aiohttp as gh_aiohttp
 from typing import Awaitable, Dict, Tuple
 
-from hubcast.models import HubcastRepo
+from hubcast.models import GitHubConfig
 
 #: location for authenticated app to get a token for one of its installations
 INSTALLATION_TOKEN_URL = "app/installations/{installation_id}/access_tokens"
@@ -45,7 +45,7 @@ def parse_isotime(timestr) -> int:
     return int(time.mktime(time.strptime(timestr[:-1], "%Y-%m-%dT%H:%M:%S")))
 
 
-async def get_jwt(repo: HubcastRepo) -> str:
+async def get_jwt(github_config: GitHubConfig) -> str:
     """Get a JWT from cache, creating a new one if necessary."""
 
     async def renew_jwt() -> Tuple[int, str]:
@@ -54,7 +54,7 @@ async def get_jwt(repo: HubcastRepo) -> str:
         # use this gidgethub method to create the JWT.
         now = time.time()
         jwt = gha.get_jwt(
-            app_id=repo.github_config.app_id, private_key=repo.github_config.private_key
+            app_id=github_config.app_id, private_key=github_config.private_key
         )
 
         # gidgethub JWT's expire after 10 minutes (you cannot change it)
@@ -63,20 +63,20 @@ async def get_jwt(repo: HubcastRepo) -> str:
     return await _tokens.get_token("JWT", renew_jwt)
 
 
-async def get_installation_id(repo: HubcastRepo) -> str:
+async def get_installation_id(github_config: GitHubConfig) -> str:
     async with aiohttp.ClientSession() as session:
-        gh = gh_aiohttp.GitHubAPI(session, repo.github_config.requester)
+        gh = gh_aiohttp.GitHubAPI(session, github_config.requester)
 
         result = await gh.getitem(
-            f"/repos/{repo.github_config.owner}/{repo.github_config.repo}/installation",
+            f"/repos/{github_config.owner}/{github_config.repo}/installation",
             accept="application/vnd.github+json",
-            jwt=await get_jwt(repo),
+            jwt=await get_jwt(github_config),
         )
 
         return result["id"]
 
 
-async def authenticate_installation(repo: HubcastRepo) -> str:
+async def authenticate_installation(github_config: GitHubConfig) -> str:
     """Get an installation access token for the application.
     Renew the JWT if necessary, then use it to get an installation access
     token from github, if necessary.
@@ -84,17 +84,17 @@ async def authenticate_installation(repo: HubcastRepo) -> str:
 
     async def renew_installation_token() -> Tuple[int, str]:
         async with aiohttp.ClientSession() as session:
-            gh = gh_aiohttp.GitHubAPI(session, repo.github_config.requester)
+            gh = gh_aiohttp.GitHubAPI(session, github_config.requester)
 
             # Use the JWT to get a limited-life OAuth token for a particular
             # installation of the app. Note that we get a JWT only when
             # necessary -- when we need to renew the installation token.
             result = await gh.post(
                 INSTALLATION_TOKEN_URL,
-                {"installation_id": repo.github_config.installation_id},
+                {"installation_id": github_config.installation_id},
                 data=b"",
                 accept="application/vnd.github.machine-man-preview+json",
-                jwt=await get_jwt(repo),
+                jwt=await get_jwt(github_config),
             )
 
             expires = parse_isotime(result["expires_at"])
@@ -102,5 +102,5 @@ async def authenticate_installation(repo: HubcastRepo) -> str:
             return (expires, token)
 
     return await _tokens.get_token(
-        repo.github_config.installation_id, renew_installation_token
+        github_config.installation_id, renew_installation_token
     )
