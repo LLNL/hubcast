@@ -8,15 +8,21 @@ port = 8080
 [default.git]
 base_path = "/tmp"
 
+# TODO: this config will go away once we migrate to managing multiple repos
+[default.repo]
+name = ""
+
 [default.github]
-repo = ""
+url = ""
 app_id = ""
 private_key_path = ""
 # NOTE: these settings will transition elsewhere once we migrate to managing multiple repos
 requester = ""
-secret = ""
 check_name = ""
+secret = ""
 
 [default.gitlab]
-repo = ""
+url = ""
+requester = ""
 access_token = ""
+secret = ""

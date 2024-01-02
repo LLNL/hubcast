@@ -1,7 +1,7 @@
 import pytest
 from unittest import mock
 
-from hubcast.auth.github import App
+from hubcast.auth.github import get_jwt, get_installation_id, authenticate_installation
 
 
 @pytest.fixture
@@ -20,21 +20,6 @@ def requester():
 
 
 @pytest.fixture
-def owner():
-    return "LLNL"
-
-
-@pytest.fixture
-def repo():
-    return "hubcast"
-
-
-@pytest.fixture
-def url(owner, repo):
-    return f"git@github.com:{owner}/{repo}.git"
-
-
-@pytest.fixture
 def jwt():
     return "jwt123"
 
@@ -50,60 +35,26 @@ def access_token():
 
 
 @pytest.fixture
-def private_key_path(tmp_path_factory):
-    return str(tmp_path_factory.mktemp(__name__).joinpath("hubcast.key"))
-
-
-@pytest.fixture
-def private_key(private_key_path):
-    key = "private_key"
-    with open(private_key_path, "w") as fh:
-        fh.write(key)
-    return key
-
-
-@pytest.fixture
-def github_config(app_id, requester, url, private_key_path):
+def config(app_id, requester, url, private_key_path, private_key):
     from hubcast.config import settings
 
-    config = settings.github.to_dict()
-    config["app_id"] = app_id
-    config["requester"] = requester
-    config["repo"] = url
-    config["private_key_path"] = private_key_path
-    return config
-
-
-@pytest.fixture
-def app_factory():
-    def _factory(config):
-        return App(
-            id=config["app_id"],
-            requester=config["requester"],
-            url=config["repo"],
-            private_key_path=config["private_key_path"],
-        )
-
-    return _factory
-
-
-def test_dynamic_app_attributes(app_factory, github_config, owner, repo, private_key):
-    # Setup/Execute
-    app = app_factory(github_config)
-
-    assert app.owner == owner
-    assert app.repo == repo
-    assert app.private_key == private_key
+    settings.github.app_id = app_id
+    settings.github.requester = requester
+    settings.github.url = url
+    settings.github.private_key_path = private_key_path
+    return settings.to_dict()
 
 
 @mock.patch("hubcast.auth.github.gha")
-async def test_get_jwt(mock_gha, app_factory, github_config, jwt, app_id, private_key):
+async def test_get_jwt(
+    mock_gha, hubcast_repo_factory, config, jwt, app_id, private_key
+):
     # Setup
     mock_gha.get_jwt.return_value = jwt
-    app = app_factory(github_config)
+    hubcast_repo = hubcast_repo_factory(config)
 
     # Execute
-    actual_jwt = await app.get_jwt()
+    actual_jwt = await get_jwt(hubcast_repo)
 
     # Verify
     assert actual_jwt == jwt
@@ -115,38 +66,31 @@ async def test_get_jwt(mock_gha, app_factory, github_config, jwt, app_id, privat
 async def test_get_installation_id(
     MockGitHubAPI,
     mock_gha,
-    app_factory,
-    github_config,
+    hubcast_repo_factory,
+    config,
+    owner,
+    repo,
     jwt,
     installation_id,
     app_id,
-    private_key,
 ):
     # Setup
     mock_gha.get_jwt.return_value = jwt
     mock_gh = MockGitHubAPI.return_value
     mock_gh.getitem = mock.AsyncMock()
     mock_gh.getitem.return_value = {"id": installation_id}
-    app = app_factory(github_config)
+    hubcast_repo = hubcast_repo_factory(config)
 
     # Execute
-    actual_installation_id = await app.get_installation_id()
+    actual_installation_id = await get_installation_id(hubcast_repo)
 
     # Verify
     assert actual_installation_id == installation_id
     mock_gh.getitem.assert_awaited_with(
-        f"/repos/{app.owner}/{app.repo}/installation",
+        f"/repos/{owner}/{repo}/installation",
         accept="application/vnd.github+json",
         jwt=jwt,
     )
-
-    # Execute
-    mock_gh.getitem.reset_mock()
-    actual_installation_id = await app.get_installation_id()
-
-    # Verify: second call returns cached result
-    assert actual_installation_id == installation_id
-    mock_gh.getitem.assert_not_awaited()
 
 
 @mock.patch("hubcast.auth.github.gha")
@@ -154,14 +98,13 @@ async def test_get_installation_id(
 async def test_authenticate_installation(
     MockGitHubAPI,
     mock_gha,
-    app_factory,
-    github_config,
+    hubcast_repo_factory,
+    config,
     jwt,
     installation_id,
     iso_8601_timestamp,
     access_token,
     app_id,
-    private_key,
 ):
     # Setup
     mock_gha.get_jwt.return_value = jwt
@@ -173,10 +116,12 @@ async def test_authenticate_installation(
     }
     mock_gh.getitem = mock.AsyncMock()
     mock_gh.getitem.return_value = {"id": installation_id}
-    app = app_factory(github_config)
+
+    hubcast_repo = hubcast_repo_factory(config)
+    hubcast_repo.github_config.installation_id = installation_id
 
     # Execute
-    actual_access_token = await app.authenticate_installation()
+    actual_access_token = await authenticate_installation(hubcast_repo)
 
     # Verify
     assert actual_access_token == access_token
