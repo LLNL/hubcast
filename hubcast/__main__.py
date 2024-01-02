@@ -61,11 +61,11 @@ async def main(request) -> web.Response:
 if __name__ == "__main__":
     print("Initializing hubcast ...")
     print("Configuring Git Repository ...")
-    if not os.path.exists(settings.git.repo_path):
-        os.makedirs(settings.git.repo_path)
+    if not os.path.exists(settings.git.base_path):
+        os.makedirs(settings.git.base_path)
         git("init")
-        git(f"remote add github {settings.github.repo}")
-        git(f"remote add gitlab {settings.gitlab.repo}")
+        git(f"remote add github {settings.github.url}")
+        git(f"remote add gitlab {settings.gitlab.url}")
 
     print("Starting Web Server...")
     app = web.Application()
