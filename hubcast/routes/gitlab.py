@@ -14,7 +14,13 @@ class HubCastRouter(routing.Router):
     """
 
     async def dispatch(
-        self, event: sansio.Event, repo: HubcastRepo, *args: Any, **kwargs: Any
+        self,
+        event: sansio.Event,
+        repo: HubcastRepo,
+        gh: gh_aiohttp.GitHubAPI,
+        gl: gl_aiohttp.GitLabAPI,
+        *args: Any,
+        **kwargs: Any,
     ) -> None:
         """Dispatch an event to all registered function(s)."""
 
@@ -34,7 +40,7 @@ class HubCastRouter(routing.Router):
                     if event_value in data_values:
                         found_callbacks.extend(data_values[event_value])
         for callback in found_callbacks:
-            await callback(event, *args, **kwargs)
+            await callback(event, repo, gh, gl, *args, **kwargs)
 
 
 router = HubCastRouter()
