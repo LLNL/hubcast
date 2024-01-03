@@ -30,7 +30,7 @@ repo_lock = asyncio.Lock()
 @router.register("pull_request", action="synchronize")
 async def sync_pr(event, repo: HubcastRepo, gh, *arg, **kwargs):
     """Sync the git fork/branch referenced in a PR to GitLab."""
-    git = Git(config=repo.git_repo_path)
+    git = Git(base_path=repo.git_repo_path)
     pull_request = event.data["pull_request"]
     pull_request_id = pull_request["number"]
     await repo_lock.acquire()
@@ -43,7 +43,7 @@ async def sync_pr(event, repo: HubcastRepo, gh, *arg, **kwargs):
 
 @router.register("pull_request", action="closed")
 async def remove_pr(event, repo: HubcastRepo, gh, *arg, **kwargs):
-    git = Git(config=repo.git_repo_path)
+    git = Git(base_path=repo.git_repo_path)
     pull_request = event.data["pull_request"]
     pull_request_id = pull_request["number"]
     await repo_lock.acquire()
