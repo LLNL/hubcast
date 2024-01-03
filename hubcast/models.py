@@ -72,7 +72,7 @@ class HubcastRepoCache:
     _repos: Dict[str, HubcastRepo] = field(factory=dict)
 
     def get(self, name: str, config: dict) -> HubcastRepo:
-        if not self._repos[name]:
+        if name not in self._repos:
             self._repos[name] = HubcastRepo(name=name, config=config)
 
         return self._repos[name]
