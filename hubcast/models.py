@@ -1,6 +1,8 @@
+import os
 import re
 from attrs import define, field
 from typing import Dict
+from .utils import Git, GitException
 
 
 @define
@@ -66,6 +68,18 @@ class HubcastRepo:
     def _gitlab_config(self):
         return GitLabConfig(**self.config["GITLAB"])
 
+    def init_git_repo(self):
+        if os.path.isfile(f"{self.git_repo_path}/.git/config"):
+            print(f"Git repository {self.name} already exists at {self.git_repo_path}")
+            return
+
+        os.makedirs(self.git_repo_path)
+        git = Git(base_path=self.git_repo_path)
+        print(f"Initializing git repository for {self.name} at {self.git_repo_path}")
+        git("init")
+        git(f"remote add github {self.github_config.url}")
+        git(f"remote add gitlab {self.gitlab_config.url}")
+
 
 @define
 class HubcastRepoCache:
@@ -73,6 +87,8 @@ class HubcastRepoCache:
 
     def get(self, name: str, config: dict) -> HubcastRepo:
         if name not in self._repos:
-            self._repos[name] = HubcastRepo(name=name, config=config)
+            repo = HubcastRepo(name=name, config=config)
+            repo.init_git_repo()
+            self._repos[name] = repo
 
         return self._repos[name]

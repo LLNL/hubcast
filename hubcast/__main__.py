@@ -1,4 +1,3 @@
-import os
 from aiohttp import web, ClientSession
 from gidgethub import aiohttp as gh_aiohttp
 from gidgetlab import aiohttp as gl_aiohttp
@@ -8,7 +7,6 @@ from .config import settings
 from .github import github
 from .gitlab import gitlab
 from .models import GitHubConfig, GitLabConfig, HubcastRepo, HubcastRepoCache
-from .utils.git import Git
 
 
 repo_cache = HubcastRepoCache()
@@ -35,14 +33,6 @@ def make_gitlab_client(
     )
 
 
-def init_git_repo(repo: HubcastRepo):
-    print(f"Initializing git repository for {repo.name} at {repo.git_repo_path}")
-    git = Git(base_path=repo.git_repo_path)
-    git("init")
-    git(f"remote add github {repo.github_config.url}")
-    git(f"remote add gitlab {repo.gitlab_config.url}")
-
-
 async def main(request) -> web.Response:
     # TODO: move main handler to closure to house session for app lifetime
     # suggested to use a single session for the lifetime of the application
@@ -51,9 +41,6 @@ async def main(request) -> web.Response:
     async with ClientSession() as session:
         repo = repo_cache.get(name=settings.repo.name, config=settings.to_dict())
 
-        if not os.path.exists(repo.git_repo_path):
-            os.makedirs(repo.git_repo_path)
-            init_git_repo(repo)
 
         gh = await make_github_client(session, repo.github_config)
 
