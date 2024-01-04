@@ -5,6 +5,11 @@ from attrs import define, field
 
 
 @define
+class GitException(Exception):
+    message: str = field()
+
+
+@define
 class Git:
     config: dict = field(factory=dict)
     base_path: str = field()
@@ -15,11 +20,15 @@ class Git:
 
     def __call__(self, args: str) -> subprocess.CompletedProcess:
         """Executes a git command on the host system."""
-        result = subprocess.run(
-            ["git", "-C", f"{self.base_path}"] + shlex.split(args),
-            stdout=subprocess.PIPE,
-            stderr=subprocess.STDOUT,
-            text=True,
-            check=True,
-        )
-        return result
+        try:
+            result = subprocess.run(
+                ["git", "-C", f"{self.base_path}"] + shlex.split(args),
+                stdout=subprocess.PIPE,
+                stderr=subprocess.STDOUT,
+                text=True,
+                check=True,
+            )
+            return result
+        except subprocess.CalledProcessError as e:
+            # TODO: Custom exception types by message
+            raise GitException(f"Command {e.cmd} failed with '{e.output}'")
