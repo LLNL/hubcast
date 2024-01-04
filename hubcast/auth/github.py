@@ -63,43 +63,45 @@ async def get_jwt(github_config: GitHubConfig) -> str:
     return await _tokens.get_token("JWT", renew_jwt)
 
 
-async def get_installation_id(github_config: GitHubConfig) -> str:
-    async with aiohttp.ClientSession() as session:
-        gh = gh_aiohttp.GitHubAPI(session, github_config.requester)
+async def get_installation_id(
+    session: aiohttp.ClientSession, github_config: GitHubConfig
+) -> str:
+    gh = gh_aiohttp.GitHubAPI(session, github_config.requester)
 
-        result = await gh.getitem(
-            f"/repos/{github_config.owner}/{github_config.repo}/installation",
-            accept="application/vnd.github+json",
-            jwt=await get_jwt(github_config),
-        )
+    result = await gh.getitem(
+        f"/repos/{github_config.owner}/{github_config.repo}/installation",
+        accept="application/vnd.github+json",
+        jwt=await get_jwt(github_config),
+    )
 
-        return result["id"]
+    return result["id"]
 
 
-async def authenticate_installation(github_config: GitHubConfig) -> str:
+async def authenticate_installation(
+    session: aiohttp.ClientSession, github_config: GitHubConfig
+) -> str:
     """Get an installation access token for the application.
     Renew the JWT if necessary, then use it to get an installation access
     token from github, if necessary.
     """
 
     async def renew_installation_token() -> Tuple[int, str]:
-        async with aiohttp.ClientSession() as session:
-            gh = gh_aiohttp.GitHubAPI(session, github_config.requester)
+        gh = gh_aiohttp.GitHubAPI(session, github_config.requester)
 
-            # Use the JWT to get a limited-life OAuth token for a particular
-            # installation of the app. Note that we get a JWT only when
-            # necessary -- when we need to renew the installation token.
-            result = await gh.post(
-                INSTALLATION_TOKEN_URL,
-                {"installation_id": github_config.installation_id},
-                data=b"",
-                accept="application/vnd.github.machine-man-preview+json",
-                jwt=await get_jwt(github_config),
-            )
+        # Use the JWT to get a limited-life OAuth token for a particular
+        # installation of the app. Note that we get a JWT only when
+        # necessary -- when we need to renew the installation token.
+        result = await gh.post(
+            INSTALLATION_TOKEN_URL,
+            {"installation_id": github_config.installation_id},
+            data=b"",
+            accept="application/vnd.github.machine-man-preview+json",
+            jwt=await get_jwt(github_config),
+        )
 
-            expires = parse_isotime(result["expires_at"])
-            token = result["token"]
-            return (expires, token)
+        expires = parse_isotime(result["expires_at"])
+        token = result["token"]
+        return (expires, token)
 
     return await _tokens.get_token(
         github_config.installation_id, renew_installation_token
