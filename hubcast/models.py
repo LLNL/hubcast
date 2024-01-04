@@ -2,7 +2,7 @@ import os
 import re
 from attrs import define, field
 from typing import Dict
-from .utils import Git, GitException
+from .utils.git import Git
 
 
 @define
