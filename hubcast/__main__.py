@@ -6,31 +6,10 @@ from .auth.github import get_installation_id, authenticate_installation
 from .config import settings
 from .github import github
 from .gitlab import gitlab
-from .models import GitHubConfig, GitLabConfig, HubcastRepo, HubcastRepoCache
+from .models import HubcastRepoCache
 
 
 repo_cache = HubcastRepoCache()
-
-
-async def make_github_client(
-    session: ClientSession, github_config: GitHubConfig
-) -> gh_aiohttp.GitHubAPI:
-    # get installation id for configured repostitory
-    if not github_config.installation_id:
-        github_config.installation_id = await get_installation_id(github_config)
-
-    # retrieve GitHub authentication token
-    gh_token = await authenticate_installation(github_config)
-
-    return gh_aiohttp.GitHubAPI(session, github_config.requester, oauth_token=gh_token)
-
-
-def make_gitlab_client(
-    session: ClientSession, gitlab_config: GitLabConfig
-) -> gl_aiohttp.GitLabAPI:
-    return gl_aiohttp.GitLabAPI(
-        session, gitlab_config.requester, access_token=gitlab_config.access_token
-    )
 
 
 async def main(request) -> web.Response:
@@ -41,14 +20,21 @@ async def main(request) -> web.Response:
     async with ClientSession() as session:
         repo = repo_cache.get(name=settings.repo.name, config=settings.to_dict())
 
+        if not repo.github_config.installation_id:
+            repo.github_config.installation_id = await get_installation_id(repo.github_config)
 
-        gh = await make_github_client(session, repo.github_config)
+        # retrieve GitHub authentication token
+        gh_token = await authenticate_installation(repo.github_config)
+
+        gh = gh_aiohttp.GitHubAPI(session, repo.github_config.requester, oauth_token=gh_token)
 
         # route request to github or gitlab submodule based on event type header
         if "x-github-event" in request.headers:
             return await github(session, request, repo, gh)
         elif "x-gitlab-event" in request.headers:
-            gl = make_gitlab_client(session, repo.gitlab_config)
+            gl = gl_aiohttp.GitLabAPI(
+                session, repo.gitlab_config.requester, access_token=repo.gitlab_config.access_token
+            )
             return await gitlab(session, request, repo, gh, gl)
         else:
             return web.Response(status=404)
