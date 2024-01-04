@@ -1,0 +1,28 @@
+dynaconf_merge = true
+
+[default]
+
+[default.hubcast]
+port = 8080
+
+[default.git]
+base_path = "/tmp"
+
+# TODO: this config will go away once we migrate to managing multiple repos
+[default.repo]
+name = ""
+
+[default.github]
+url = ""
+app_id = ""
+private_key_path = ""
+# NOTE: these settings will transition elsewhere once we migrate to managing multiple repos
+requester = ""
+check_name = ""
+secret = ""
+
+[default.gitlab]
+url = ""
+requester = ""
+access_token = ""
+secret = ""

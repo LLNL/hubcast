@@ -1,39 +1,31 @@
-import os
 import sys
 import traceback
 
-import aiohttp
-from aiohttp import web
-from gidgethub import aiohttp as gh_aiohttp
+from aiohttp import web, ClientSession
 from gidgethub import sansio
+from gidgethub import aiohttp as gh_aiohttp
 
-from .auth.github import authenticate_installation, get_installation_id
+from .models import HubcastRepo
 from .routes.github import router
 
-# Get configuration from environment
-GH_SECRET = os.environ.get("HC_GH_SECRET")
-GH_REQUESTER = os.environ.get("HC_GH_REQUESTER")
 
-
-async def github(request):
+async def github(
+    session: ClientSession,
+    request: web.Request,
+    repo: HubcastRepo,
+    gh: gh_aiohttp.GitHubAPI,
+) -> web.Response:
     try:
         # read the GitHub webhook payload
         body = await request.read()
 
-        event = sansio.Event.from_http(request.headers, body, secret=GH_SECRET)
+        event = sansio.Event.from_http(
+            request.headers, body, secret=repo.github_config.secret
+        )
         print("GH delivery ID", event.delivery_id, file=sys.stderr)
 
-        # get installation id for configured repostitory
-        installation_id = await get_installation_id()
-
-        # retrieve GitHub authentication token
-        token = await authenticate_installation(installation_id)
-
-        async with aiohttp.ClientSession() as session:
-            gh = gh_aiohttp.GitHubAPI(session, GH_REQUESTER, oauth_token=token)
-
-            # call the appropriate callback for the event
-            await router.dispatch(event, gh, session=session)
+        # call the appropriate callback for the event
+        await router.dispatch(event, repo, gh, session=session)
 
         # return a "Success"
         return web.Response(status=200)
