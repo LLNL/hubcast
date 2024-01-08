@@ -15,3 +15,9 @@ docs:
   - any-glob-to-any-file:
     - docs/**
     - README.md
+
+tests:
+- changes-files:
+  - any-glob-to-any-file:
+    - hubcast/tests/**
+    - .github/workflows/unit-tests.yml
