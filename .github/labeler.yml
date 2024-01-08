@@ -1,0 +1,23 @@
+ci:
+- changed-files:
+  - any-glob-to-any-file:
+    - .github/**
+
+dependencies:
+- changed-files:
+  - any-glob-to-any-file:
+    - .github/worklflows/requirements/**
+    - pyproject.toml
+    - spack.yaml
+
+docs:
+- changed-files:
+  - any-glob-to-any-file:
+    - docs/**
+    - README.md
+
+tests:
+- changes-files:
+  - any-glob-to-any-file:
+    - hubcast/tests/**
+    - .github/workflows/unit-tests.yml
