@@ -10,6 +10,7 @@ spack:
   - py-cachetools
   - py-gidgethub
   - py-gidgetlab
+  - py-pyyaml
   - py-pytest
   - py-pytest-asyncio
   - py-flake8
