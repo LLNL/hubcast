@@ -1,5 +1,5 @@
 import time
-from typing import Callable, Dict, Tuple, Union
+from typing import Awaitable, Callable, Dict, Tuple, Union
 
 import aiohttp
 import gidgethub.apps as gha
@@ -17,13 +17,28 @@ class TokenCache:
     _tokens: Dict[str, Tuple[float, str]]
 
     def __init__(self) -> None:
-        # token name to (expiration, token) tuple
         self._tokens = {}
 
     async def get_token(
-        self, name: str, renew: Callable[None], *, time_needed: int = 60
+        self,
+        name: str,
+        renew: Callable[[], Awaitable[Tuple[float, str]]],
+        time_needed: int = 60,
     ) -> str:
-        """Get a cached token, or renew as needed."""
+        """
+        Get a cached token, or renew as needed.
+
+        Parameters
+        ---------
+        name: str
+            An identifying name of a token to get from the cache.
+        renew: Callable[None]
+            A function to call in order to generate a new token if the cache
+            is stale.
+        time_needed: int
+            The length of time a token will be needed. Thus any token that
+            expires during this window should be disregarded and renewed.
+        """
         expires, token = self._tokens.get(name, (0, ""))
 
         now = time.time()
@@ -35,21 +50,35 @@ class TokenCache:
 
 
 class GitHubAuthenticator:
+    """
+    An authenticator and token handler for GitHub.
+
+    Attributes:
+    ----------
+    requester: str
+        A GitHub bot user to act as and perform actions as.
+    private_key: str
+        A pem encoded string of the GitHub App's private key
+        which is used to generate JWTs and other access tokens.
+    app_id: str
+        A string of the numeric GitHub App's ID.
+    """
+
     requester: str
     private_key: str
     app_id: str
     _tokens: TokenCache
-    id: Union[str, None]
+    _id: Union[str, None]
 
     def __init__(self, requester: str, private_key: str, app_id: str) -> None:
         self.requester = requester
         self.private_key = private_key
         self.app_id = app_id
         self._tokens = TokenCache()
-        self.id = None
+        self._id = None
 
     async def get_installation_id(self, owner: str, repo: str) -> str:
-        if self.id is None:
+        if self._id is None:
             async with aiohttp.ClientSession() as session:
                 gh = gh_aiohttp.GitHubAPI(session, self.requester)
                 result = await gh.getitem(
@@ -57,12 +86,13 @@ class GitHubAuthenticator:
                     accept="application/vnd.github+json",
                     jwt=await self.get_jwt(),
                 )
-                self.id = result["id"]
+                self._id = result["id"]
 
-        return self.id
+        return self._id
 
-    async def authenticate_installation(self, owner, repo):
-        """Get an installation access token for the application.
+    async def authenticate_installation(self, owner: str, repo: str) -> str:
+        """
+        Get an installation access token for the application.
         Renew the JWT if necessary, then use it to get an installation access
         token from github, if necessary.
         """

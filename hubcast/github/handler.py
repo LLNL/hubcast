@@ -16,6 +16,7 @@ from hubcast.github.auth import GitHubAuthenticator
 from hubcast.github.routes import router
 from hubcast.gitlab.auth import GitLabAuthenticator
 from hubcast.utils.git import Git
+from hubcast.account_map.abc import AccountMap
 
 
 async def create_repo(
@@ -47,7 +48,7 @@ class GitHubHandler:
         gh_requester: str,
         webhook_secret: str,
         repos_path: str,
-        account_map,
+        account_map: AccountMap,
         gl_authenticator: GitLabAuthenticator,
         gl_instance_url: str,
     ):

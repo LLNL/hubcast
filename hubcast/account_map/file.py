@@ -2,8 +2,10 @@ from typing import Dict, Union
 
 import yaml
 
+from .abc import AccountMap
 
-class FileMap:
+
+class FileMap(AccountMap):
     """
     A simple user map importing from a YAML file of the form.
 

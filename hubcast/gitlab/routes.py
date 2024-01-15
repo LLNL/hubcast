@@ -1,4 +1,3 @@
-import re
 from typing import Any
 
 from gidgetlab import routing, sansio
@@ -39,17 +38,13 @@ router = GitLabRouter()
 @router.register("Pipeline Hook", status="running")
 @router.register("Pipeline Hook", status="success")
 @router.register("Pipeline Hook", status="failure")
-async def opened_issue(event, gh, gl, gh_check_name, *arg, **kwargs):
+async def opened_issue(event, gh, repo_owner, repo, gh_check_name, *arg, **kwargs):
     """Relay status of a GitLab pipeline back to GitHub."""
     # get ref from event
     ref = event.data["object_attributes"]["sha"]
 
     # get status from event
     ci_status = event.data["object_attributes"]["status"]
-
-    # get the repo name and owner from event
-    repo = event.data["repo"]
-    [repo_owner, repo_name] = repo["full_name"].split("/", 1)
 
     # construct upload payload
     payload = {
@@ -82,8 +77,8 @@ async def opened_issue(event, gh, gl, gh_check_name, *arg, **kwargs):
     # create a new check if no previous check is found, or if the previous
     # existing check was marked as completed. (This allows to check re-runs.)
     if existing_check is None or existing_check["status"] == "completed":
-        url = f"/repos/{repo_owner}/{repo_name}/check-runs"
+        url = f"/repos/{repo_owner}/{repo}/check-runs"
         await gh.post(url, data=payload)
     else:
-        url = f"/repos/{repo_owner}/{repo_name}/check-runs/{existing_check['id']}"
+        url = f"/repos/{repo_owner}/{repo}/check-runs/{existing_check['id']}"
         await gh.patch(url, data=payload)

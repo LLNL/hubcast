@@ -84,9 +84,7 @@ def main():
         gl_instance_url,
     )
 
-    gitlab_handler = GitLabHandler(
-        gitlab_auth, gl_requester, gl_webhook_secret, github_auth, gh_requester
-    )
+    gitlab_handler = GitLabHandler(github_auth, gh_requester, gl_webhook_secret)
 
     hubcast = HubcastForwarder(github_handler, gitlab_handler)
 
