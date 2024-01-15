@@ -1,6 +1,6 @@
 import os
-from urllib.parse import urlparse
 from typing import Any
+from urllib.parse import urlparse
 
 from aiohttp import web
 
@@ -23,6 +23,7 @@ class HubcastForwarder:
     gitlab: GitLabHandler
         A GitLab webhook event handler.
     """
+
     def __init__(self, github_handler: GitHubHandler, gitlab_handler: GitLabHandler):
         self.github = github_handler
         self.gitlab = gitlab_handler

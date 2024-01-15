@@ -1,5 +1,6 @@
+from typing import Dict, Union
+
 import yaml
-from typing import Union, Dict
 
 
 class FileMap:
@@ -15,6 +16,7 @@ class FileMap:
     path: str
         A filepath to the users.yml defining a usermapping.
     """
+
     path: str
     users: Dict[str, str]
 

@@ -1,9 +1,9 @@
 import time
+from typing import Callable, Dict, Tuple, Union
 
 import aiohttp
 import gidgethub.apps as gha
 from gidgethub import aiohttp as gh_aiohttp
-from typing import Dict, Tuple, Callable, Union
 
 #: location for authenticated app to get a token for one of its installations
 INSTALLATION_TOKEN_URL = "app/installations/{installation_id}/access_tokens"
@@ -13,13 +13,16 @@ class TokenCache:
     """
     Cache for web tokens with an expiration.
     """
+
     _tokens: Dict[str, Tuple[float, str]]
 
     def __init__(self) -> None:
         # token name to (expiration, token) tuple
         self._tokens = {}
 
-    async def get_token(self, name: str, renew: Callable[None], *, time_needed: int = 60) -> str:
+    async def get_token(
+        self, name: str, renew: Callable[None], *, time_needed: int = 60
+    ) -> str:
         """Get a cached token, or renew as needed."""
         expires, token = self._tokens.get(name, (0, ""))
 
