@@ -3,17 +3,11 @@ import traceback
 
 import aiohttp
 from aiohttp import web
-from gidgethub import aiohttp as gh_aiohttp
-from gidgetlab import aiohttp as gl_aiohttp
+from gidgetlab import aiohttp as gh_aiohttp
 from gidgetlab import sansio
 
-from hubcast.github import config
 from hubcast.github.auth import GitHubAuthenticator
-from hubcast.github.routes import router
-from hubcast.gitlab.auth import GitLabAuthenticator
-from hubcast.utils.git import Git
-from hubcast.account_map.abc import AccountMap
-from .routes import router
+from hubcast.gitlab.routes import router
 
 
 class GitLabHandler:
@@ -33,7 +27,7 @@ class GitLabHandler:
         self.gh_requester = gh_requester
         self.webhook_secret = webhook_secret
 
-    async def handle(self, request):
+    async def handle(self, request: web.Request):
         try:
             # read the GitLab webhook payload
             body = await request.read()

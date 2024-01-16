@@ -62,7 +62,6 @@ def main():
 
     gl_instance_url = os.environ.get("HC_GL_URL")
     gl_access_token = os.environ.get("HC_GL_ACCESS_TOKEN")
-    gl_requester = os.environ.get("HC_GL_REQUESTER")
     gl_webhook_secret = os.environ.get("HC_GL_SECRET")
 
     github_auth = GitHubAuthenticator(gh_requester, gh_privkey, gh_app_id)

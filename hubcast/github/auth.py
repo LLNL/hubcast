@@ -1,5 +1,5 @@
 import time
-from typing import Awaitable, Callable, Dict, Tuple, Union
+from typing import Awaitable, Callable, Dict, Tuple
 
 import aiohttp
 import gidgethub.apps as gha
@@ -68,17 +68,17 @@ class GitHubAuthenticator:
     private_key: str
     app_id: str
     _tokens: TokenCache
-    _id: Union[str, None]
+    _id_dict: Dict((Tuple[str, str], str))
 
     def __init__(self, requester: str, private_key: str, app_id: str) -> None:
         self.requester = requester
         self.private_key = private_key
         self.app_id = app_id
         self._tokens = TokenCache()
-        self._id = None
+        self._id_dict = {}
 
     async def get_installation_id(self, owner: str, repo: str) -> str:
-        if self._id is None:
+        if (owner, repo) not in self._id_dict:
             async with aiohttp.ClientSession() as session:
                 gh = gh_aiohttp.GitHubAPI(session, self.requester)
                 result = await gh.getitem(
@@ -86,9 +86,9 @@ class GitHubAuthenticator:
                     accept="application/vnd.github+json",
                     jwt=await self.get_jwt(),
                 )
-                self._id = result["id"]
+                self._id_dict[(owner, repo)] = result["id"]
 
-        return self._id
+        return self._id_dict[(owner, repo)]
 
     async def authenticate_installation(self, owner: str, repo: str) -> str:
         """
