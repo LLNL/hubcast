@@ -40,7 +40,4 @@ class FileMap(AccountMap):
         """
         Return the gitlab_user for a github_user if one exists.
         """
-        if github_user in self.users:
-            return self.users[github_user]
-
-        return None
+        return self.users.get(github_user)
