@@ -3,7 +3,7 @@ import traceback
 
 import aiohttp
 from aiohttp import web
-from gidgetlab import aiohttp as gh_aiohttp
+from gidgethub import aiohttp as gh_aiohttp
 from gidgetlab import sansio
 
 from hubcast.github.auth import GitHubAuthenticator
@@ -55,7 +55,8 @@ class GitLabHandler:
                 # call the appropriate callback for the event
                 await router.dispatch(
                     event, gh, gh_repo_owner, gh_repo, gh_check_name, session=session
-                )
+
+                    )
 
                 # return a "Success"
                 return web.Response(status=200)

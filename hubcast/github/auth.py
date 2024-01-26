@@ -14,8 +14,6 @@ class TokenCache:
     Cache for web tokens with an expiration.
     """
 
-    _tokens: Dict[str, Tuple[float, str]]
-
     def __init__(self) -> None:
         self._tokens = {}
 
@@ -63,12 +61,6 @@ class GitHubAuthenticator:
     app_id: str
         A string of the numeric GitHub App's ID.
     """
-
-    requester: str
-    private_key: str
-    app_id: str
-    _tokens: TokenCache
-    _id_dict: Dict((Tuple[str, str], str))
 
     def __init__(self, requester: str, private_key: str, app_id: str) -> None:
         self.requester = requester

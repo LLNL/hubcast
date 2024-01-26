@@ -30,10 +30,10 @@ async def sync_pr(event, gh, gl, git: Git, repo_lock, *arg, **kwargs):
 
     await repo_lock.acquire()
     try:
-        git(f"fetch github pull/{pull_request_id}/head")
-        git(f"push gitlab FETCH_HEAD:refs/heads/pr-{pull_request_id}")
+        git(["fetch", "github", f"pull/{pull_request_id}/head"])
+        git(["push", "gitlab", f"FETCH_HEAD:refs/heads/pr-{pull_request_id}"])
     finally:
-        await repo_lock.release()
+        repo_lock.release()
 
 
 @router.register("pull_request", action="closed")
@@ -42,6 +42,6 @@ async def remove_pr(event, gh, gl, git: Git, repo_lock, *arg, **kwargs):
     pull_request_id = pull_request["number"]
     await repo_lock.acquire()
     try:
-        git(f"push -d gitlab refs/heads/pr-{pull_request_id}")
+        git(["push", "-d", "gitlab", f"refs/heads/pr-{pull_request_id}"])
     finally:
-        await repo_lock.release()
+        repo_lock.release()

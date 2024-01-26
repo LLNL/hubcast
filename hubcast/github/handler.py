@@ -16,7 +16,7 @@ from hubcast.github import config
 from hubcast.github.auth import GitHubAuthenticator
 from hubcast.github.routes import router
 from hubcast.gitlab.auth import GitLabAuthenticator
-from hubcast.utils.git import Git
+from hubcast.utils.git import Git, credential_helper
 
 
 async def create_repo(
@@ -30,9 +30,8 @@ async def create_repo(
     try:
         if not os.path.exists(repo_path):
             os.makedirs(repo_path)
-            git("init")
-            git(f"remote add github {github_url}")
-            git(f"remote add gitlab {gitlab_url}")
+            git(["clone", "--origin", "github", github_url])
+            git(["remote", "add", "gitlab", gitlab_url])
 
     except CalledProcessError:
         os.rmdir(repo_path)
@@ -100,13 +99,22 @@ class GitHubHandler:
             gitlab_token = await self.gl_auth.authenticate_installation(gitlab_user)
 
             # create git object for callback functions
+            git_env = {
+                "GITHUB_USERNAME": self.requester,
+                "GITHUB_TOKEN": github_token,
+                "GITLAB_USERNAME": gitlab_user,
+                "GITLAB_TOKEN": gitlab_token,
+            }
+
+            git_flags = [
+                "-C", f"{repo_path}",
+                "-c", f"{credential_helper('github', 'github.com')}",
+                "-c", f"{credential_helper('gitlab', self.gl_instance_url.removeprefix('https://'))}",
+            ]
+
             git = Git(
-                repo_path,
-                gh_username=self.requester,
-                gh_token=github_token,
-                gl_username=gitlab_user,
-                gl_token=gitlab_token,
-                gl_instance_url=self.gl_instance_url,
+                env=git_env,
+                flags=git_flags,
             )
 
             async with aiohttp.ClientSession() as session:
