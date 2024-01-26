@@ -17,34 +17,15 @@ def pr_event_factory():
 
 
 @pytest.fixture
-def m_git(mocker):
-    m = mock.Mock()
-    mocker.patch("hubcast.utils.git.Git", return_value=m)
-    return m
-
-
-@pytest.fixture
-def m_gh(mocker):
-    m = mock.Mock()
-    mocker.patch("gidgethub.aiohttp.GitHubAPI", return_value=m)
-    return m
-
-
-@pytest.fixture
-def m_gl(mocker):
-    m = mock.Mock()
-    mocker.patch("gidgetlab.aiohttp.GitLabAPI", return_value=m)
-    return m
-
-
-@pytest.fixture
 async def m_repo_lock(mocker):
     m = mock.AsyncMock()
     mocker.patch("asyncio.Lock", return_value=m)
     return m
 
 
-@pytest.mark.asyncio
+@mock.patch("gidgethub.aiohttp.GitHubAPI")
+@mock.patch("gidgetlab.aiohttp.GitLabAPI")
+@mock.patch("hubcast.utils.git.Git")
 async def test_github_sync_pr(m_gh, m_gl, m_git, m_repo_lock, pr_event_factory):
     # Setup
     event = pr_event_factory("opened", "1", "1234")
@@ -61,6 +42,9 @@ async def test_github_sync_pr(m_gh, m_gl, m_git, m_repo_lock, pr_event_factory):
     )
 
 
+@mock.patch("gidgethub.aiohttp.GitHubAPI")
+@mock.patch("gidgetlab.aiohttp.GitLabAPI")
+@mock.patch("hubcast.utils.git.Git")
 async def test_github_remove_pr(m_gh, m_gl, m_git, m_repo_lock, pr_event_factory):
     # Setup
     event = pr_event_factory("closed", "2", "1234")
