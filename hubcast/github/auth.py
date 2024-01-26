@@ -1,5 +1,5 @@
 import time
-from typing import Awaitable, Callable, Dict, Tuple
+from typing import Awaitable, Callable, Tuple
 
 import aiohttp
 import gidgethub.apps as gha

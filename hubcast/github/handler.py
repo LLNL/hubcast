@@ -107,9 +107,12 @@ class GitHubHandler:
             }
 
             git_flags = [
-                "-C", f"{repo_path}",
-                "-c", f"{credential_helper('github', 'github.com')}",
-                "-c", f"{credential_helper('gitlab', self.gl_instance_url.removeprefix('https://'))}",
+                "-C",
+                f"{repo_path}",
+                "-c",
+                f"{credential_helper('github', 'github.com')}",
+                "-c",
+                f"{credential_helper('gitlab', self.gl_instance_url.removeprefix('https://'))}",
             ]
 
             git = Git(

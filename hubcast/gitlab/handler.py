@@ -55,8 +55,7 @@ class GitLabHandler:
                 # call the appropriate callback for the event
                 await router.dispatch(
                     event, gh, gh_repo_owner, gh_repo, gh_check_name, session=session
-
-                    )
+                )
 
                 # return a "Success"
                 return web.Response(status=200)
