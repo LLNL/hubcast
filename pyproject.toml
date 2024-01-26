@@ -19,6 +19,7 @@ dependencies = [
     "cachetools",
     "gidgethub",
     "gidgetlab",
+    "pyyaml",
 ]
 dynamic = ["version"]
 
@@ -26,16 +27,19 @@ dynamic = ["version"]
 dev = [
     "pytest",
     "pytest-asyncio",
+    "pytest-mock"
 ]
 
 [tool.black]
+line-length = 88
 target-version = ["py38", "py39", "py310", "py311"]
 color = true
 
 [tool.isort]
+color_output = true
+line_length = 88
 profile = "black"
 skip_gitignore = true
-color_output = true
 
 [tool.mypy]
 python_version = "3.8"

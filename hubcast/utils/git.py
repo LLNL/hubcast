@@ -1,17 +1,31 @@
-import os
 import subprocess
+from dataclasses import dataclass, field
+from typing import Dict, List
 
-# get configuration from environment.
-GIT_REPO_PATH = os.environ.get("HC_GIT_REPO_PATH")
+
+# https://git-scm.com/docs/gitcredentials#_custom_helpers
+def credential_helper(remote: str, url: str) -> str:
+    remote = remote.upper()
+
+    username_str = f"username=${remote}_USERNAME"
+    pass_str = f"password=${remote}_TOKEN"
+
+    helper_func = f"""!f() {{ echo "{username_str}"; echo "{pass_str}"; }};f"""
+    return f"""credential.{url}.helper={helper_func}"""
 
 
-def git(args):
-    """Executes a git command on the host system."""
-    result = subprocess.run(
-        ["git", "-C", f"{GIT_REPO_PATH}"] + args.split(),
-        stdout=subprocess.PIPE,
-        stderr=subprocess.STDOUT,
-        text=True,
-        check=True,
-    )
-    return result
+@dataclass
+class Git:
+    env: Dict[str, str] = field(default_factory=lambda: {})
+    flags: List[str] = field(default_factory=lambda: [])
+
+    def __call__(self, args: List[str]):
+        """Executes a git command on the host system."""
+        return subprocess.run(
+            ["git", *self.flags, *args],
+            env=self.env,
+            stdout=subprocess.PIPE,
+            stderr=subprocess.PIPE,
+            text=True,
+            check=True,
+        )
