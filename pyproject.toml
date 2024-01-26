@@ -27,6 +27,7 @@ dynamic = ["version"]
 dev = [
     "pytest",
     "pytest-asyncio",
+    "pytest-mock"
 ]
 
 [tool.black]

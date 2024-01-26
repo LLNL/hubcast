@@ -12,6 +12,7 @@ spack:
   - py-gidgetlab
   - py-pyyaml
   - py-pytest
+  - py-pytest-mock
   - py-pytest-asyncio
   - py-flake8
   - py-black
