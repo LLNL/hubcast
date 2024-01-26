@@ -1,9 +1,9 @@
 from unittest import mock
 
 import pytest
+from gidgethub import sansio
 
 from hubcast.github.routes import router as gh_router
-from gidgethub import sansio
 
 
 @pytest.fixture
@@ -19,28 +19,28 @@ def pr_event_factory():
 @pytest.fixture
 def m_git(mocker):
     m = mock.Mock()
-    mocker.patch('hubcast.utils.git.Git', return_value=m)
+    mocker.patch("hubcast.utils.git.Git", return_value=m)
     return m
 
 
 @pytest.fixture
 def m_gh(mocker):
     m = mock.Mock()
-    mocker.patch('gidgethub.aiohttp.GitHubAPI', return_value=m)
+    mocker.patch("gidgethub.aiohttp.GitHubAPI", return_value=m)
     return m
 
 
 @pytest.fixture
 def m_gl(mocker):
     m = mock.Mock()
-    mocker.patch('gidgetlab.aiohttp.GitLabAPI', return_value=m)
+    mocker.patch("gidgetlab.aiohttp.GitLabAPI", return_value=m)
     return m
 
 
 @pytest.fixture
 async def m_repo_lock(mocker):
     m = mock.AsyncMock()
-    mocker.patch('asyncio.Lock', return_value=m)
+    mocker.patch("asyncio.Lock", return_value=m)
     return m
 
 
