@@ -4,7 +4,6 @@ from gidgetlab import routing, sansio
 
 
 class GitLabRouter(routing.Router):
-
     """
     Custom router to handle common interactions for hubcast
     """
