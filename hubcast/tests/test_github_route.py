@@ -17,9 +17,9 @@ def pr_event_factory():
 
 
 @pytest.fixture
-async def m_repo_lock(mocker):
+async def m_repo_lock():
     m = mock.AsyncMock()
-    mocker.patch("asyncio.Lock", return_value=m)
+    mock.patch("asyncio.Lock", return_value=m)
     return m
 
 
