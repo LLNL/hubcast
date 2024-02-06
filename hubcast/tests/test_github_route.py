@@ -36,8 +36,8 @@ async def test_github_sync_pr(m_gh, m_gl, m_git, m_repo_lock, pr_event_factory):
     # Assert
     m_git.assert_has_calls(
         [
-            mock.call(["fetch", "github", "pull/1234/head"]),
-            mock.call(["push", "gitlab", "FETCH_HEAD:refs/heads/pr-1234"]),
+            mock.call("fetch github pull/1234/head"),
+            mock.call("push gitlab FETCH_HEAD:refs/heads/pr-1234"),
         ]
     )
 
@@ -53,4 +53,4 @@ async def test_github_remove_pr(m_gh, m_gl, m_git, m_repo_lock, pr_event_factory
     await gh_router.dispatch(event, m_gh, m_gl, m_git, m_repo_lock)
 
     # Assert
-    m_git.assert_called_once_with(["push", "-d", "gitlab", "refs/heads/pr-1234"])
+    m_git.assert_called_once_with("push -d gitlab refs/heads/pr-1234")
