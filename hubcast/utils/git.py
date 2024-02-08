@@ -1,3 +1,4 @@
+import shlex
 import subprocess
 from dataclasses import dataclass, field
 from typing import Dict, List
@@ -19,10 +20,10 @@ class Git:
     env: Dict[str, str] = field(default_factory=lambda: {})
     flags: List[str] = field(default_factory=lambda: [])
 
-    def __call__(self, args: List[str]):
+    def __call__(self, args: str):
         """Executes a git command on the host system."""
         return subprocess.run(
-            ["git", *self.flags, *args],
+            ["git", *self.flags] + shlex.split(args),
             env=self.env,
             stdout=subprocess.PIPE,
             stderr=subprocess.PIPE,

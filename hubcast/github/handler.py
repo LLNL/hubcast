@@ -30,8 +30,8 @@ async def create_repo(
     try:
         if not os.path.exists(repo_path):
             os.makedirs(repo_path)
-            git(["clone", "--origin", "github", github_url])
-            git(["remote", "add", "gitlab", gitlab_url])
+            git("clone --origin github github_url")
+            git("remote add gitlab gitlab_url")
 
     except CalledProcessError:
         os.rmdir(repo_path)
