@@ -1,4 +1,7 @@
 import os
+import json
+import logging
+import pathlib
 from typing import Any
 from urllib.parse import urlparse
 
@@ -9,6 +12,9 @@ from hubcast.github.auth import GitHubAuthenticator
 from hubcast.github.handler import GitHubHandler
 from hubcast.gitlab.auth import GitLabAuthenticator
 from hubcast.gitlab.handler import GitLabHandler
+
+
+logger = logging.getLogger(__name__)
 
 
 class HubcastForwarder:
@@ -46,8 +52,18 @@ class HubcastForwarder:
         return web.Response(status=404)
 
 
+def setup_logging():
+    config_file = pathlib.Path("logging/config.json")
+    with open(config_file) as f_in:
+        config = json.load(f_in)
+
+    logging.config.dictConfig(config)
+
+
 def main():
-    print("Initializing hubcast ...")
+    setup_logging()
+    logging.basicConfig(level="DEBUG")
+    logger.info("Initializing hubcast ...")
     repos_path = os.environ.get("HC_REPOS_PATH")
     port = os.environ.get("HC_PORT")
     if port is not None:
@@ -87,11 +103,11 @@ def main():
 
     hubcast = HubcastForwarder(github_handler, gitlab_handler)
 
-    print("Configuring Temporary Repositories Directory ...")
+    logger.info("Configuring Temporary Repositories Directory ...")
     if not os.path.exists(repos_path):
         os.makedirs(repos_path)
 
-    print("Starting Web Server...")
+    logger.info("Starting Web Server...")
     app = web.Application()
     app.router.add_post("/", hubcast.handle)
 

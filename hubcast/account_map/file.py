@@ -1,8 +1,11 @@
 from typing import Dict, Union
 
+import logging
 import yaml
 
 from .abc import AccountMap
+
+logger = logging.getLogger(__name__)
 
 
 class FileMap(AccountMap):
@@ -34,7 +37,7 @@ class FileMap(AccountMap):
                 data = yaml.safe_load(f)
                 self.users = data["Users"]
             except yaml.YAMLError as exc:
-                print(exc)
+                logger.exception(exc)
 
     def __call__(self, github_user: str) -> Union[str, None]:
         """

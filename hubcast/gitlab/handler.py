@@ -1,5 +1,4 @@
-import sys
-import traceback
+import logging
 
 import aiohttp
 from aiohttp import web
@@ -8,6 +7,8 @@ from gidgetlab import sansio
 
 from hubcast.github.auth import GitHubAuthenticator
 from hubcast.gitlab.routes import router
+
+logger = logging.getLogger(__name__)
 
 
 class GitLabHandler:
@@ -34,7 +35,7 @@ class GitLabHandler:
             event = sansio.Event.from_http(
                 request.headers, body, secret=self.webhook_secret
             )
-            print("GL delivery ID", event.event, file=sys.stderr)
+            logger.warning("GL delivery ID: {event.event}")
 
             # get coorisponding GitHub repo owner and name from event
             # request variables
@@ -60,6 +61,6 @@ class GitLabHandler:
                 # return a "Success"
                 return web.Response(status=200)
 
-        except Exception:
-            traceback.print_exc(file=sys.stderr)
+        except Exception as exc:
+            logger.exception(exc)
             return web.Response(status=500)
