@@ -35,7 +35,7 @@ class GitLabHandler:
             event = sansio.Event.from_http(
                 request.headers, body, secret=self.webhook_secret
             )
-            logger.warning("GL delivery ID: {event.event}")
+            logger.warning(f"GL delivery ID: {event.event}")
 
             # get coorisponding GitHub repo owner and name from event
             # request variables
