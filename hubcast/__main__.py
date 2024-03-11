@@ -53,9 +53,50 @@ class HubcastForwarder:
 
 
 def setup_logging():
+    # Standard Logging file
+    config = {
+      "version": 1,
+      "disable_existing_loggers": False,
+      "formatters": {
+        "default": {
+          "format": "[%(levelname)s|%(module)s|L%(lineno)d] %(asctime)s: %(message)s",
+          "datefmt": "%Y-%m-%dT%H:%M:%S%z"
+        },
+        "json": {
+          "()": "mylogger.MyJSONFormatter",
+          "fmt_keys": {
+            "level": "levelname",
+            "message": "message",
+            "timestamp": "timestamp",
+            "logger": "name",
+            "module": "module",
+            "function": "funcName",
+            "line": "lineno",
+          }
+        }
+      },
+      "handlers": {
+        "stdout": {
+          "class": "logging.StreamHandler",
+          "formatter": "json",
+          "stream": "ext://sys.stdout"
+        }
+      },
+      "loggers": {
+        "root": {
+          "level": "DEBUG",
+          "handlers": [
+            "stdout"
+          ]
+        }
+      }
+    }
+
+    # Custom logging file
     config_file = pathlib.Path("logging/config.json")
-    with open(config_file) as f_in:
-        config = json.load(f_in)
+    if config_file.exists():
+        with open(config_file) as f_in:
+            config = json.load(f_in)
 
     logging.config.dictConfig(config)
 
