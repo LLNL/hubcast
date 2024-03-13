@@ -53,7 +53,7 @@ def main():
     if port is not None:
         port = int(port)
 
-    account_map_path = os.environ.get("HC_ACCOUNT_FILE")
+    account_map_path = os.environ.get("HC_ACCOUNT_MAP_PATH")
 
     gh_app_id = os.environ.get("HC_GH_APP_IDENTIFIER")
     gh_privkey = os.environ.get("HC_GH_PRIVATE_KEY")

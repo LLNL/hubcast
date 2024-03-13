@@ -56,6 +56,11 @@ export HC_GL_SECRET=""
 export HC_GL_REQUESTER=""
 
 #------------------------------------------------------------------------
+# Account Map Settings
+#------------------------------------------------------------------------
+export HC_ACCOUNT_MAP_PATH="users.yml"
+
+#------------------------------------------------------------------------
 # General Bot Settings
 #------------------------------------------------------------------------
 # Port for hubcast to listen on.
@@ -176,6 +181,25 @@ export HC_GL_SECRET=""
 
 # GitLab User to act on the behalf of.
 export HC_GL_REQUESTER=""
+```
+
+### Creating a Account Map Document
+Lastly we'll need to create a simple account map to map GitHub to GitLab users.
+
+##### .env
+```bash
+#------------------------------------------------------------------------
+# Account Map Settings
+#------------------------------------------------------------------------
+export HC_ACCOUNT_MAP_PATH="users.yml"
+```
+
+##### users.yml
+```yaml
+Users:
+  github_user1: gitlab_user1
+  github_user2: gitlab_user2
+  ...
 ```
 
 ### Finishing Up
