@@ -1,12 +1,13 @@
 import os
 import json
-import logging
+import logging.config
 import pathlib
 from typing import Any
 from urllib.parse import urlparse
 
 from aiohttp import web
 
+import hubcast.json_logging
 from hubcast.account_map.file import FileMap
 from hubcast.github.auth import GitHubAuthenticator
 from hubcast.github.handler import GitHubHandler
@@ -63,7 +64,7 @@ def setup_logging():
           "datefmt": "%Y-%m-%dT%H:%M:%S%z"
         },
         "json": {
-          "()": "mylogger.MyJSONFormatter",
+          "()": "hubcast.json_logging.MyJSONFormatter",
           "fmt_keys": {
             "level": "levelname",
             "message": "message",
@@ -93,7 +94,7 @@ def setup_logging():
     }
 
     # Custom logging file
-    config_file = pathlib.Path("logging/config.json")
+    config_file = pathlib.Path("local_logging_config.json")
     if config_file.exists():
         with open(config_file) as f_in:
             config = json.load(f_in)
