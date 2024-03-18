@@ -7,7 +7,6 @@ from urllib.parse import urlparse
 
 from aiohttp import web
 
-import hubcast.json_logging
 from hubcast.account_map.file import FileMap
 from hubcast.github.auth import GitHubAuthenticator
 from hubcast.github.handler import GitHubHandler
@@ -56,41 +55,34 @@ class HubcastForwarder:
 def setup_logging():
     # Standard Logging file
     config = {
-      "version": 1,
-      "disable_existing_loggers": False,
-      "formatters": {
-        "default": {
-          "format": "[%(levelname)s|%(module)s|L%(lineno)d] %(asctime)s: %(message)s",
-          "datefmt": "%Y-%m-%dT%H:%M:%S%z"
+        "version": 1,
+        "disable_existing_loggers": False,
+        "formatters": {
+            "default": {
+                "format": "[%(levelname)s|%(module)s|L%(lineno)d] %(asctime)s: %(message)s",
+                "datefmt": "%Y-%m-%dT%H:%M:%S%z",
+            },
+            "json": {
+                "()": "hubcast.json_logging.MyJSONFormatter",
+                "fmt_keys": {
+                    "level": "levelname",
+                    "message": "message",
+                    "timestamp": "timestamp",
+                    "logger": "name",
+                    "module": "module",
+                    "function": "funcName",
+                    "line": "lineno",
+                },
+            },
         },
-        "json": {
-          "()": "hubcast.json_logging.MyJSONFormatter",
-          "fmt_keys": {
-            "level": "levelname",
-            "message": "message",
-            "timestamp": "timestamp",
-            "logger": "name",
-            "module": "module",
-            "function": "funcName",
-            "line": "lineno",
-          }
-        }
-      },
-      "handlers": {
-        "stdout": {
-          "class": "logging.StreamHandler",
-          "formatter": "json",
-          "stream": "ext://sys.stdout"
-        }
-      },
-      "loggers": {
-        "root": {
-          "level": "DEBUG",
-          "handlers": [
-            "stdout"
-          ]
-        }
-      }
+        "handlers": {
+            "stdout": {
+                "class": "logging.StreamHandler",
+                "formatter": "json",
+                "stream": "ext://sys.stdout",
+            }
+        },
+        "loggers": {"root": {"level": "DEBUG", "handlers": ["stdout"]}},
     }
 
     # Custom logging file
