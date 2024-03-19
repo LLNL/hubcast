@@ -63,7 +63,7 @@ def setup_logging():
                 "datefmt": "%Y-%m-%dT%H:%M:%S%z",
             },
             "json": {
-                "()": "hubcast.json_logging.MyJSONFormatter",
+                "()": "hubcast.logging.json_logging.MyJSONFormatter",
                 "fmt_keys": {
                     "level": "levelname",
                     "message": "message",
@@ -86,7 +86,7 @@ def setup_logging():
     }
 
     # Custom logging file
-    config_file = pathlib.Path("local_logging_config.json")
+    config_file = pathlib.Path("logging/local_logging_config.json")
     if config_file.exists():
         with open(config_file) as f_in:
             config = json.load(f_in)
