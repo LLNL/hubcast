@@ -1,7 +1,6 @@
 import os
 import json
 import logging.config
-import pathlib
 from typing import Any
 from urllib.parse import urlparse
 
