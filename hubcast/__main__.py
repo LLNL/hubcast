@@ -86,7 +86,7 @@ def setup_logging():
     }
 
     # Custom logging file
-    config_file = pathlib.Path("logging/local_logging_config.json")
+    config_file = os.environ.get("HC_LOGGING_CONFIG_PATH", "")
     if config_file.exists():
         with open(config_file) as f_in:
             config = json.load(f_in)
