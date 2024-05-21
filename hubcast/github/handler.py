@@ -1,7 +1,6 @@
 import asyncio
 import os
-import sys
-import traceback
+import logging
 from subprocess import CalledProcessError
 from typing import Dict
 
@@ -17,6 +16,8 @@ from hubcast.github.auth import GitHubAuthenticator
 from hubcast.github.routes import router
 from hubcast.gitlab.auth import GitLabAuthenticator
 from hubcast.utils.git import Git, credential_helper
+
+logger = logging.getLogger(__name__)
 
 
 async def create_repo(
@@ -67,7 +68,7 @@ class GitHubHandler:
             event = sansio.Event.from_http(
                 request.headers, body, secret=self.webhook_secret
             )
-            print("GH delivery ID", event.delivery_id, file=sys.stderr)
+            logger.warning(f"GH delivery ID: {event.delivery_id}")
 
             # get the owner and name of the repo which sent the event
             repo_data = event.data["repository"]
@@ -85,11 +86,11 @@ class GitHubHandler:
                 github_user = event.data["sender"]["login"]
                 gitlab_user = self.account_map(github_user)
             except Exception as exc:
-                print(exc)
+                logger.exception(exc)
                 return web.Response(status=200)
 
             if gitlab_user is None:
-                print("Unauthorized User")
+                logger.warning("Unauthorized User")
                 return web.Response(status=200)
 
             # get limited scope tokens for github and gitlab clients
@@ -148,6 +149,6 @@ class GitHubHandler:
                 # return a "Success"
                 return web.Response(status=200)
 
-        except Exception:
-            traceback.print_exc(file=sys.stderr)
+        except Exception as exc:
+            logger.exception(exc)
             return web.Response(status=500)
