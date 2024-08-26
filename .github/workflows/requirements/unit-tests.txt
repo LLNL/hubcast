@@ -1,4 +1,4 @@
-aiohttp==3.9.5
+aiohttp==3.10.5
 cachetools==5.4.0
 gidgethub==5.3.0
 gidgetlab==2.0.1
