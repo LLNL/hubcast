@@ -30,11 +30,12 @@ async def create_repo(
     try:
         if not os.path.exists(repo_path):
             os.makedirs(repo_path)
-            git("clone --origin github github_url")
-            git("remote add gitlab gitlab_url")
+            git(f"clone --origin github {github_url} .")
+            git(f"remote add gitlab {gitlab_url}")
 
-    except CalledProcessError:
+    except CalledProcessError as e:
         os.rmdir(repo_path)
+        print(e)
 
     finally:
         repo_lock.release()
