@@ -3,11 +3,11 @@ updates:
   - package-ecosystem: "github-actions"
     directory: "/"
     schedule:
-      interval: "daily"
+      interval: "monthly"
   - package-ecosystem: "pip"
     directory: "/.github/workflows/requirements"
     schedule:
-      interval: "weekly"
+      interval: "monthly"
     ignore:
       # setuptools releases new versions almost daily
       - dependency-name: "setuptools"
