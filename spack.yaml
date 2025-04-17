@@ -3,20 +3,15 @@
 # It describes a set of packages to be installed, along with
 # configuration settings.
 spack:
-  # add package specs to the `specs` list
+  repos:
+  - $env/spack/repo
   specs:
-  - python
-  - py-aiohttp
-  - py-cachetools
-  - py-gidgethub
-  - py-gidgetlab
-  - py-pyyaml
-  - py-pytest
-  - py-pytest-mock
-  - py-pytest-asyncio
-  - py-flake8
-  - py-black
+  - py-hubcast
   - smee-client
   view: true
   concretizer:
     unify: true
+  develop:
+    py-hubcast:
+      spec: py-hubcast@=main
+      path: $env

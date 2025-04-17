@@ -36,8 +36,8 @@ router = GitLabRouter()
 @router.register("Pipeline Hook", status="pending")
 @router.register("Pipeline Hook", status="running")
 @router.register("Pipeline Hook", status="success")
-@router.register("Pipeline Hook", status="failure")
-async def opened_issue(event, gh, repo_owner, repo, gh_check_name, *arg, **kwargs):
+@router.register("Pipeline Hook", status="failed")
+async def status_relay(event, gh, gh_check_name, *arg, **kwargs):
     """Relay status of a GitLab pipeline back to GitHub."""
     # get ref from event
     ref = event.data["object_attributes"]["sha"]
@@ -63,7 +63,7 @@ async def opened_issue(event, gh, repo_owner, repo, gh_check_name, *arg, **kwarg
         payload["conclusion"] = "failure"
 
     # get a list of the checks on a commit
-    url = f"/repos/{repo_owner}/{repo}/commits/{ref}/check-runs"
+    url = f"/repos/{gh.repo_owner}/{gh.repo_name}/commits/{ref}/check-runs"
     data = await gh.getitem(url)
 
     # search for existing check with GH_CHECK_NAME
@@ -76,8 +76,8 @@ async def opened_issue(event, gh, repo_owner, repo, gh_check_name, *arg, **kwarg
     # create a new check if no previous check is found, or if the previous
     # existing check was marked as completed. (This allows to check re-runs.)
     if existing_check is None or existing_check["status"] == "completed":
-        url = f"/repos/{repo_owner}/{repo}/check-runs"
+        url = f"/repos/{gh.repo_owner}/{gh.repo_name}/check-runs"
         await gh.post(url, data=payload)
     else:
-        url = f"/repos/{repo_owner}/{repo}/check-runs/{existing_check['id']}"
+        url = f"/repos/{gh.repo_owner}/{gh.repo_name}/check-runs/{existing_check['id']}"
         await gh.patch(url, data=payload)
