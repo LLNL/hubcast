@@ -45,39 +45,14 @@ async def status_relay(event, gh, gh_check_name, *arg, **kwargs):
     # get status from event
     ci_status = event.data["object_attributes"]["status"]
 
-    # construct upload payload
-    payload = {
-        "name": gh_check_name,
-        "head_sha": ref,
-    }
-
+    # translate between GitLab and GitHub statuses
     if ci_status == "pending":
-        payload["status"] = "queued"
+        status = "queued"
     elif ci_status == "running":
-        payload["status"] = "in_progress"
-    elif ci_status == "success":
-        payload["status"] = "completed"
-        payload["conclusion"] = "success"
+        status = "in_progress"
+    elif ci_status == "failed":
+        status = "failure"
     else:
-        payload["status"] = "completed"
-        payload["conclusion"] = "failure"
+        status = ci_status
 
-    # get a list of the checks on a commit
-    url = f"/repos/{gh.repo_owner}/{gh.repo_name}/commits/{ref}/check-runs"
-    data = await gh.getitem(url)
-
-    # search for existing check with GH_CHECK_NAME
-    existing_check = None
-    for check in data["check_runs"]:
-        if check["name"] == gh_check_name:
-            existing_check = check
-            break
-
-    # create a new check if no previous check is found, or if the previous
-    # existing check was marked as completed. (This allows to check re-runs.)
-    if existing_check is None or existing_check["status"] == "completed":
-        url = f"/repos/{gh.repo_owner}/{gh.repo_name}/check-runs"
-        await gh.post(url, data=payload)
-    else:
-        url = f"/repos/{gh.repo_owner}/{gh.repo_name}/check-runs/{existing_check['id']}"
-        await gh.patch(url, data=payload)
+    await gh.set_check_status(ref, gh_check_name, status)
