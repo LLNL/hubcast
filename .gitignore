@@ -4,4 +4,4 @@ spack.lock
 .spack-env
 *.pem
 build-*
-users.yml
+.test-users.yml

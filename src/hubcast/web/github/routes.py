@@ -4,6 +4,8 @@ from typing import Any
 from gidgethub import routing, sansio
 from repligit.asyncio import fetch_pack, ls_remote, send_pack
 
+from .utils import get_repo_config
+
 log = logging.getLogger(__name__)
 
 
@@ -34,8 +36,12 @@ async def sync_pr(event, gh, gl, gl_user, *arg, **kwargs):
     full_name = pull_request["head"]["repo"]["full_name"]
     want_sha = pull_request["head"]["sha"]
 
+    repo_config = await get_repo_config(gh, full_name)
+
     target_ref = f"refs/heads/pr-{pull_request_id}"
-    dest_remote_url = f"{gl.instance_url}/{full_name}.git"
+    dest_remote_url = (
+        f"{gl.instance_url}/{repo_config.dest_org}/{repo_config.dest_name}.git"
+    )
 
     gl_refs = await ls_remote(dest_remote_url)
 

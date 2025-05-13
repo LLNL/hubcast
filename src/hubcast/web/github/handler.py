@@ -39,7 +39,12 @@ class GitHubHandler:
                 log.info(f"Unauthorized GitHub User: {github_user}")
                 return web.Response(status=200)
 
-            await spawn(request, router.dispatch(event, self.gh, self.gl, gitlab_user))
+            gh_repo_owner = event.data["repository"]["owner"]["login"]
+            gh_repo = event.data["repository"]["name"]
+
+            gh = self.gh.create_client(gh_repo_owner, gh_repo)
+
+            await spawn(request, router.dispatch(event, gh, self.gl, gitlab_user))
 
             # return a "Success"
             return web.Response(status=200)

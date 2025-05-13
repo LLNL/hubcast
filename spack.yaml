@@ -6,6 +6,7 @@ spack:
   repos:
   - $env/spack/repo
   specs:
+  - py-pip
   - py-hubcast
   - smee-client
   view: true
