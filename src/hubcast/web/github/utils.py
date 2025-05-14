@@ -1,7 +1,7 @@
+from typing import Dict
+
 from hubcast.clients.github import GitHubClient
 from hubcast.repos.config import RepoConfig
-
-from typing import Dict
 
 config_cache = dict()
 

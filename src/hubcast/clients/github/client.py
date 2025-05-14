@@ -1,8 +1,10 @@
-import aiohttp
-from gidgethub import aiohttp as gh_aiohttp
-import yaml
 import base64
 import logging
+
+import aiohttp
+import yaml
+from gidgethub import aiohttp as gh_aiohttp
+
 from .auth import GitHubAuthenticator
 
 log = logging.getLogger(__name__)
