@@ -82,7 +82,7 @@ it may be a good idea to test it first on a test repository.)
 To create a GitHub App you'll need a callback url and a webhook secret.
 
 If you're deploying Hubcast in production, this callback url be an https link
-to your infastructure. If you're deploying for development, we recommend
+to your infrastructure. If you're deploying for development, we recommend
 using [smee.io](https://smee.io) to forward webhooks to your local environment.
 
 To see more about contributing to Hubcast check out our contributing

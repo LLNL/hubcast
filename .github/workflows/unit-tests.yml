@@ -9,17 +9,23 @@ jobs:
     runs-on: ubuntu-latest
     strategy:
       matrix:
-        python-version: ['3.8', '3.11']
+        python-version: ['3.10', '3.13']
     steps:
       - uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683
-      - uses: actions/setup-python@f677139bbe7f9c59b41e40162b753c062f5d49a3
+      - uses: actions/setup-python@8d9ed9ac5c53483de85588cdf95a591a75ab9f55
         with:
           python-version: ${{ matrix.python-version }}
           cache: 'pip'
-          cache-dependency-path: '.github/workflows/requirements/unit-tests.txt'
+          cache-dependency-path: |
+            'pyproject.toml'
+            '.github/workflows/requirements/unit-tests.txt'
+
       - name: Install Python dependencies
         run: |
+          pip install .
           pip install -r .github/workflows/requirements/unit-tests.txt
+
       - name: Run Unit Tests with Pytest
         run: |
-          pytest
+          python3 -m build  # build package for compatibility with publish.yml
+          python3 -m pytest

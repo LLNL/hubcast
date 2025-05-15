@@ -10,7 +10,7 @@ $ cd spack/
 
 Next we'll need to load Spack into our shell. (Add one of the following lines
 -- prepended by the directory you cloned spack into -- to your
-`.zshrc`, `.bashrc`, or equivalent to make it permenent.)
+`.zshrc`, `.bashrc`, or equivalent to make it permanent.)
 
 ```bash
 # For bash/zsh/sh

@@ -36,8 +36,8 @@ router = GitLabRouter()
 @router.register("Pipeline Hook", status="pending")
 @router.register("Pipeline Hook", status="running")
 @router.register("Pipeline Hook", status="success")
-@router.register("Pipeline Hook", status="failure")
-async def opened_issue(event, gh, repo_owner, repo, gh_check_name, *arg, **kwargs):
+@router.register("Pipeline Hook", status="failed")
+async def status_relay(event, gh, gh_check_name, *arg, **kwargs):
     """Relay status of a GitLab pipeline back to GitHub."""
     # get ref from event
     ref = event.data["object_attributes"]["sha"]
@@ -45,39 +45,14 @@ async def opened_issue(event, gh, repo_owner, repo, gh_check_name, *arg, **kwarg
     # get status from event
     ci_status = event.data["object_attributes"]["status"]
 
-    # construct upload payload
-    payload = {
-        "name": gh_check_name,
-        "head_sha": ref,
-    }
-
+    # translate between GitLab and GitHub statuses
     if ci_status == "pending":
-        payload["status"] = "queued"
+        status = "queued"
     elif ci_status == "running":
-        payload["status"] = "in_progress"
-    elif ci_status == "success":
-        payload["status"] = "completed"
-        payload["conclusion"] = "success"
+        status = "in_progress"
+    elif ci_status == "failed":
+        status = "failure"
     else:
-        payload["status"] = "completed"
-        payload["conclusion"] = "failure"
+        status = ci_status
 
-    # get a list of the checks on a commit
-    url = f"/repos/{repo_owner}/{repo}/commits/{ref}/check-runs"
-    data = await gh.getitem(url)
-
-    # search for existing check with GH_CHECK_NAME
-    existing_check = None
-    for check in data["check_runs"]:
-        if check["name"] == gh_check_name:
-            existing_check = check
-            break
-
-    # create a new check if no previous check is found, or if the previous
-    # existing check was marked as completed. (This allows to check re-runs.)
-    if existing_check is None or existing_check["status"] == "completed":
-        url = f"/repos/{repo_owner}/{repo}/check-runs"
-        await gh.post(url, data=payload)
-    else:
-        url = f"/repos/{repo_owner}/{repo}/check-runs/{existing_check['id']}"
-        await gh.patch(url, data=payload)
+    await gh.set_check_status(ref, gh_check_name, status)
