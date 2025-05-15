@@ -6,7 +6,7 @@ ci:
 dependencies:
 - changed-files:
   - any-glob-to-any-file:
-    - .github/worklflows/requirements/**
+    - .github/workflows/requirements/**
     - pyproject.toml
     - spack.yaml
 
@@ -15,9 +15,3 @@ docs:
   - any-glob-to-any-file:
     - docs/**
     - README.md
-
-tests:
-- changes-files:
-  - any-glob-to-any-file:
-    - hubcast/tests/**
-    - .github/workflows/unit-tests.yml

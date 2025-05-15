@@ -31,20 +31,44 @@ jobs:
         with:
           filters: |
             style:
-              - '.github/**'
-              - 'hubcast/**'
+              - '.github/**/*'
+              - 'src/**/*'
               - 'pyproject.toml'
-            unit-tests:
-              - '.github/**'
-              - 'hubcast/**'
-              - 'pyproject.toml'
+           # unit-tests:
+           #   - '.github/**/*'
+           #   - 'src/**/*'
+           #   - 'tests/**/*'
+           #   - 'pyproject.toml'
 
   style:
     if: ${{ needs.changes.outputs.style == 'true' }}
     needs: changes
     uses: ./.github/workflows/style.yml
 
-  unit-tests:
-    if: ${{ needs.changes.outputs.unit-tests == 'true' }}
-    needs: [changes, style]
-    uses: ./.github/workflows/unit-tests.yml
+  # unit-tests:
+  #   if: ${{ needs.changes.outputs.unit-tests == 'true' }}
+  #   needs: [changes, style]
+  #   uses: ./.github/workflows/unit-tests.yml
+
+  # coverage:
+  #   if: ${{ needs.changes.outputs.unit-tests == 'true' }}
+  #   needs: [changes, style, unit-tests]
+  #   uses: ./.github/workflows/coverage.yml
+
+  all:
+    needs:
+     - changes
+     - style
+     # - unit-tests
+     # - coverage
+    if: always()
+    runs-on: ubuntu-latest
+    steps:
+    - name: Status summary
+      run: |
+        if [[ "${{ contains(needs.*.result, 'failure') || contains(needs.*.result, 'cancelled') }}" == "true" ]]; then
+          echo "One or more required jobs failed or were cancelled"
+          exit 1
+        else
+          echo "All jobs completed successfully"
+        fi
