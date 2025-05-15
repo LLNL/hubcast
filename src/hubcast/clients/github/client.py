@@ -41,7 +41,7 @@ class GitHubClient:
             "head_sha": ref,
         }
 
-        # for sucess and failure status write out a conclusion
+        # for success and failure status write out a conclusion
         if status in ("success", "failure"):
             payload["status"] = "completed"
             payload["conclusion"] = status

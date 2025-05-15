@@ -9,6 +9,7 @@ spack:
   - py-pip
   - py-hubcast
   - smee-client
+  - typos
   view: true
   concretizer:
     unify: true
