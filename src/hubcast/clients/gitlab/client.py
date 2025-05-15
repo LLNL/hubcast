@@ -1,8 +1,10 @@
-from .auth import GitLabAuthenticator
-import aiohttp
-import gidgetlab.aiohttp
 import urllib.parse
 from typing import Dict
+
+import aiohttp
+import gidgetlab.aiohttp
+
+from .auth import GitLabAuthenticator
 
 
 class GitLabClientFactory:
