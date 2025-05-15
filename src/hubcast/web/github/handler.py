@@ -43,8 +43,9 @@ class GitHubHandler:
             gh_repo = event.data["repository"]["name"]
 
             gh = self.gh.create_client(gh_repo_owner, gh_repo)
+            gl = self.gl.create_client(gitlab_user)
 
-            await spawn(request, router.dispatch(event, gh, self.gl, gitlab_user))
+            await spawn(request, router.dispatch(event, gh, gl, gitlab_user))
 
             # return a "Success"
             return web.Response(status=200)

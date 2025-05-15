@@ -25,3 +25,4 @@ class GitLabConfig:
         self.instance_url = os.environ.get("HC_GL_URL")
         self.access_token = os.environ.get("HC_GL_ACCESS_TOKEN")
         self.webhook_secret = os.environ.get("HC_GL_SECRET")
+        self.callback_url = os.environ.get("HC_GL_CALLBACK_URL")

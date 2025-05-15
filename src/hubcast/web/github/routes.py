@@ -23,43 +23,55 @@ router = GitHubRouter()
 log = logging.getLogger(__name__)
 
 
+# -----------------------------------
+# Push Events
+# -----------------------------------
 @router.register("push", deleted=False)
 async def sync_branch(event, gh, gl, gl_user, *arg, **kwargs):
     """Sync the git branch referenced to GitLab."""
-    repo_url = event.data["repository"]["clone_url"]
-    fullname = event.data["repository"]["full_name"]
+    src_repo_url = event.data["repository"]["clone_url"]
+    src_fullname = event.data["repository"]["full_name"]
+    src_owner, src_repo_name = src_fullname.split("/")
     want_sha = event.data["head_commit"]["id"]
     target_ref = event.data["ref"]
 
     # skip branches from push events that are also pull requests
-    gh_refs = await ls_remote(repo_url)
-
+    gh_refs = await ls_remote(src_repo_url)
     pull_refs = [gh_refs[ref] for ref in gh_refs if ref.startswith("refs/pull/")]
     if want_sha in pull_refs:
         return
 
-    repo_config = await get_repo_config(gh, fullname, refresh=True)
+    repo_config = await get_repo_config(gh, src_fullname, refresh=True)
 
     dest_fullname = f"{repo_config.dest_org}/{repo_config.dest_name}"
     dest_remote_url = f"{gl.instance_url}/{dest_fullname}.git"
 
+    # setup callback webhook on GitLab
+    webhook_data = {
+        "gh_owner": src_owner,
+        "gh_repo": src_repo_name,
+        "gh_check": repo_config.check_name,
+    }
+    await gl.set_webhook(dest_fullname, webhook_data)
+
+    # sync commits from GitHub -> GitLab
     gl_refs = await ls_remote(dest_remote_url)
     have_shas = gl_refs.values()
     from_sha = gl_refs.get(target_ref) or ("0" * 40)
 
     if want_sha in have_shas:
-        log.info(f"[{fullname}]: {target_ref} already up-to-date")
+        log.info(f"[{src_fullname}]: {target_ref} already up-to-date")
         return
 
     packfile = await fetch_pack(
-        repo_url,
+        src_repo_url,
         want_sha,
         have_shas,
     )
 
     gl_token = await gl.auth.authenticate_installation(gl_user)
 
-    log.info(f"[{fullname}]: mirroring {from_sha} -> {want_sha}")
+    log.info(f"[{src_fullname}]: mirroring {from_sha} -> {want_sha}")
     await send_pack(
         dest_remote_url,
         target_ref,
@@ -73,10 +85,10 @@ async def sync_branch(event, gh, gl, gl_user, *arg, **kwargs):
 
 @router.register("push", deleted=True)
 async def remove_branch(event, gh, gl, gl_user, *arg, **kwargs):
-    fullname = event.data["repository"]["full_name"]
+    src_fullname = event.data["repository"]["full_name"]
     target_ref = event.data["ref"]
 
-    repo_config = await get_repo_config(gh, fullname, refresh=True)
+    repo_config = await get_repo_config(gh, src_fullname, refresh=True)
 
     dest_fullname = f"{repo_config.dest_org}/{repo_config.dest_name}"
     dest_remote_url = f"{gl.instance_url}/{dest_fullname}.git"
@@ -87,7 +99,7 @@ async def remove_branch(event, gh, gl, gl_user, *arg, **kwargs):
 
     gl_token = await gl.auth.authenticate_installation(gl_user)
 
-    log.info(f"[{fullname}]: deleting {target_ref}")
+    log.info(f"[{src_fullname}]: deleting {target_ref}")
     await send_pack(
         dest_remote_url,
         target_ref,
@@ -99,6 +111,9 @@ async def remove_branch(event, gh, gl, gl_user, *arg, **kwargs):
     )
 
 
+# -----------------------------------
+# Pull Request Events
+# -----------------------------------
 @router.register("pull_request", action="opened")
 @router.register("pull_request", action="reopened")
 @router.register("pull_request", action="synchronize")
@@ -107,21 +122,21 @@ async def sync_pr(event, gh, gl, gl_user, *arg, **kwargs):
     pull_request = event.data["pull_request"]
     pull_request_id = pull_request["number"]
 
-    repo_url = pull_request["head"]["repo"]["clone_url"]
-    fullname = pull_request["head"]["repo"]["full_name"]
+    src_repo_url = pull_request["head"]["repo"]["clone_url"]
+    src_fullname = pull_request["head"]["repo"]["full_name"]
     want_sha = pull_request["head"]["sha"]
 
     # pull requests coming from forks are pushed as branches in the form of
     # pr-<pr-number> instead of as their branch name as conflicts could occur
     # between multiple repositories
-    is_pull_request_fork = fullname != pull_request["base"]["repo"]["full_name"]
+    is_pull_request_fork = src_fullname != pull_request["base"]["repo"]["full_name"]
     if is_pull_request_fork:
         target_ref = f"refs/heads/pr-{pull_request_id}"
     else:
         target_ref = f"refs/heads/{pull_request['head']['ref']}"
 
     # get the repository configuration from .github/hubcast.yml
-    repo_config = await get_repo_config(gh, fullname)
+    repo_config = await get_repo_config(gh, src_fullname)
 
     dest_fullname = f"{repo_config.dest_org}/{repo_config.dest_name}"
     dest_remote_url = f"{gl.instance_url}/{dest_fullname}.git"
@@ -131,12 +146,12 @@ async def sync_pr(event, gh, gl, gl_user, *arg, **kwargs):
     from_sha = gl_refs.get(target_ref) or ("0" * 40)
 
     if want_sha in have_shas:
-        log.info(f"[{fullname}]: {target_ref} already up-to-date")
+        log.info(f"[{src_fullname}]: {target_ref} already up-to-date")
         return
 
     # fetch differential packfile with all new commits
     packfile = await fetch_pack(
-        repo_url,
+        src_repo_url,
         want_sha,
         have_shas,
     )
@@ -144,7 +159,7 @@ async def sync_pr(event, gh, gl, gl_user, *arg, **kwargs):
     gl_token = await gl.auth.authenticate_installation(gl_user)
 
     # upload packfile to gitlab repository
-    log.info(f"[{fullname}]: mirroring {from_sha} -> {want_sha}")
+    log.info(f"[{src_fullname}]: mirroring {from_sha} -> {want_sha}")
     await send_pack(
         dest_remote_url,
         target_ref,
@@ -159,14 +174,14 @@ async def sync_pr(event, gh, gl, gl_user, *arg, **kwargs):
 @router.register("pull_request", action="closed")
 async def remove_pr(event, gh, gl, gl_user, *arg, **kwargs):
     pull_request = event.data["pull_request"]
-    fullname = pull_request["head"]["repo"]["full_name"]
+    src_fullname = pull_request["head"]["repo"]["full_name"]
 
     # if the pull request comes from a fork we should clean up
     # the branch upon closing or merging the PR. However, if the
     # pull request comes from an internal branch we should wait
     # to clean up the branch when the branch is deleted from the
     # internal repository
-    is_pull_request_fork = fullname != pull_request["base"]["repo"]["full_name"]
+    is_pull_request_fork = src_fullname != pull_request["base"]["repo"]["full_name"]
     if not is_pull_request_fork:
         return
 
@@ -174,7 +189,7 @@ async def remove_pr(event, gh, gl, gl_user, *arg, **kwargs):
     target_ref = f"refs/heads/pr-{pull_request_id}"
 
     # get the repository configuration from .github/hubcast.yml
-    repo_config = await get_repo_config(gh, fullname)
+    repo_config = await get_repo_config(gh, src_fullname)
 
     dest_fullname = f"{repo_config.dest_org}/{repo_config.dest_name}"
     dest_remote_url = f"{gl.instance_url}/{dest_fullname}.git"
@@ -185,7 +200,7 @@ async def remove_pr(event, gh, gl, gl_user, *arg, **kwargs):
 
     gl_token = await gl.auth.authenticate_installation(gl_user)
 
-    log.info(f"[{fullname}]: deleting {target_ref}")
+    log.info(f"[{src_fullname}]: deleting {target_ref}")
     await send_pack(
         dest_remote_url,
         target_ref,

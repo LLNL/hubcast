@@ -25,7 +25,12 @@ def main():
     gh_client_factory = GitHubClientFactory(
         conf.gh.app_id, conf.gh.privkey, conf.gh.requester
     )
-    gl_client_factory = GitLabClientFactory(conf.gl.instance_url, conf.gl.access_token)
+    gl_client_factory = GitLabClientFactory(
+        conf.gl.instance_url,
+        conf.gl.access_token,
+        conf.gl.callback_url,
+        conf.gl.webhook_secret,
+    )
 
     gh_handler = GitHubHandler(
         conf.gh.webhook_secret,
