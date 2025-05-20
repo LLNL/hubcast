@@ -102,3 +102,14 @@ class GitHubClient:
                 raise InvalidConfigYAMLError()
 
             return config
+
+    async def getitem(self, url: str):
+        """GET response from arbitrary GitHub API URL"""
+        gh_token = await self.auth.authenticate_installation(
+            self.repo_owner, self.repo_name
+        )
+
+        async with aiohttp.ClientSession() as session:
+            gh = gh_aiohttp.GitHubAPI(session, self.requester, oauth_token=gh_token)
+
+            return await gh.getitem(url)
