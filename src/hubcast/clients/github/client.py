@@ -42,7 +42,7 @@ class GitHubClient:
         }
 
         # for success and failure status write out a conclusion
-        if status in ("success", "failure"):
+        if status in ("success", "failure", "cancelled"):
             payload["status"] = "completed"
             payload["conclusion"] = status
         else:
