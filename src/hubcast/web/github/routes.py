@@ -36,9 +36,13 @@ async def sync_branch(event, gh, gl, gl_user, *arg, **kwargs):
     target_ref = event.data["ref"]
 
     # skip branches from push events that are also pull requests
-    gh_refs = await ls_remote(src_repo_url)
-    pull_refs = [gh_refs[ref] for ref in gh_refs if ref.startswith("refs/pull/")]
-    if want_sha in pull_refs:
+    # https://docs.github.com/en/rest/pulls/pulls?apiVersion=2022-11-28#list-pull-requests
+    # head: filter pulls by head user or head organization and branch name
+    branch_prs = await gh.getitem(
+        f"/repos/{gh.repo_owner}/{gh.repo_name}/pulls?head={gh.repo_owner}:{target_ref}"
+    )
+
+    if len(branch_prs) > 0:
         return
 
     repo_config = await get_repo_config(gh, src_fullname, refresh=True)
