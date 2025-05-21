@@ -120,9 +120,9 @@ class GitHubClient:
         # https://docs.github.com/en/rest/pulls/pulls?apiVersion=2022-11-28#list-pull-requests
         # default is open pull requests
 
-        url = "/repos/{gh.repo_owner}/{gh.repo_name}/pulls"
+        url = f"/repos/{self.repo_owner}/{self.repo_name}/pulls"
         if branch:
             # head: filter pulls by head user or head organization and branch name
             url = f"{url}?head={self.repo_owner}:{branch}"
 
-        return self.getitem(url)
+        return await self.getitem(url)
