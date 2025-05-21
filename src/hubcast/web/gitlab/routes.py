@@ -37,6 +37,7 @@ router = GitLabRouter()
 @router.register("Pipeline Hook", status="running")
 @router.register("Pipeline Hook", status="success")
 @router.register("Pipeline Hook", status="failed")
+@router.register("Pipeline Hook", status="canceled")
 async def status_relay(event, gh, gh_check_name, *arg, **kwargs):
     """Relay status of a GitLab pipeline back to GitHub."""
     # get ref from event
@@ -45,6 +46,9 @@ async def status_relay(event, gh, gh_check_name, *arg, **kwargs):
     # get status from event
     ci_status = event.data["object_attributes"]["status"]
 
+    # https://docs.github.com/en/rest/guides/using-the-rest-api-to-interact-with-checks#about-check-suites
+    # https://docs.gitlab.com/api/pipelines/#list-project-pipelines -> status description
+
     # translate between GitLab and GitHub statuses
     if ci_status == "pending":
         status = "queued"
@@ -52,6 +56,8 @@ async def status_relay(event, gh, gh_check_name, *arg, **kwargs):
         status = "in_progress"
     elif ci_status == "failed":
         status = "failure"
+    elif ci_status == "canceled":
+        status = "cancelled"
     else:
         status = ci_status
 
