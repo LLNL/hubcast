@@ -7,19 +7,28 @@ from aiojobs.aiohttp import setup
 from hubcast.account_map.file import FileMap
 from hubcast.clients.github import GitHubClientFactory
 from hubcast.clients.gitlab import GitLabClientFactory
-from hubcast.config import Config
+from hubcast.config import Config, ConfigError
 from hubcast.web.github import GitHubHandler
 from hubcast.web.gitlab import GitLabHandler
 
 
+log = logging.getLogger(__name__)
+
+
 def main():
     app = web.Application()
-    conf = Config()
 
+    try:
+        conf = Config()
+    except ConfigError as e:
+        log.error(e)
+        sys.exit(1)
+
+    # error if we're unable to initialize an account map
     if conf.account_map_type == "file":
         account_map = FileMap(conf.account_map_path)
     else:
-        print("Error: No Account Map Type Found")
+        log.error(f"Error: Unknown Account Map Type: {conf.account_map_type}")
         sys.exit(1)
 
     gh_client_factory = GitHubClientFactory(
