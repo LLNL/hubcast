@@ -36,9 +36,7 @@ async def sync_branch(event, gh, gl, gl_user, *arg, **kwargs):
     target_ref = event.data["ref"]
 
     # skip branches from push events that are also pull requests
-    gh_refs = await ls_remote(src_repo_url)
-    pull_refs = [gh_refs[ref] for ref in gh_refs if ref.startswith("refs/pull/")]
-    if want_sha in pull_refs:
+    if await gh.get_prs(branch=target_ref):
         return
 
     repo_config = await get_repo_config(gh, src_fullname, refresh=True)
