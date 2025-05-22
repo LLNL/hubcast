@@ -103,8 +103,9 @@ class GitHubClient:
 
             return config
 
-    async def getitem(self, url: str):
-        """GET response from arbitrary GitHub API URL"""
+    async def get_prs(self, branch=None):
+        """Returns a list of all open PR numbers; can be filtered by internal branches."""
+
         gh_token = await self.auth.authenticate_installation(
             self.repo_owner, self.repo_name
         )
@@ -112,17 +113,11 @@ class GitHubClient:
         async with aiohttp.ClientSession() as session:
             gh = gh_aiohttp.GitHubAPI(session, self.requester, oauth_token=gh_token)
 
-            return await gh.getitem(url)
-
-    async def get_prs(self, branch=None):
-        """Get all open PRs in the repository, can be filtered by internal branches."""
-
-        # https://docs.github.com/en/rest/pulls/pulls?apiVersion=2022-11-28#list-pull-requests
-        # default is open pull requests
-
-        url = f"/repos/{self.repo_owner}/{self.repo_name}/pulls"
-        if branch:
-            # head: filter pulls by head user or head organization and branch name
-            url = f"{url}?head={self.repo_owner}:{branch}"
-
-        return await self.getitem(url)
+            # https://docs.github.com/en/rest/pulls/pulls?apiVersion=2022-11-28#list-pull-requests
+            # default is open pull requests
+            url = f"/repos/{self.repo_owner}/{self.repo_name}/pulls"
+            if branch:
+                # head: filter pulls by head user or head organization and branch name
+                url = f"{url}?head={self.repo_owner}:{branch}"
+                prs_res = await gh.getitem(url)
+                return [pr["number"] for pr in prs_res]
