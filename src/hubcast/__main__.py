@@ -11,7 +11,6 @@ from hubcast.config import Config, ConfigError
 from hubcast.web.github import GitHubHandler
 from hubcast.web.gitlab import GitLabHandler
 
-
 log = logging.getLogger(__name__)
 
 
