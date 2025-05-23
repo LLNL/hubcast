@@ -4,7 +4,7 @@
 # configuration settings.
 spack:
   repos:
-  - $env/spack_repo/hubcast
+  - $env/repos/spack_repo/hubcast
   specs:
   - py-pip
   - py-hubcast
