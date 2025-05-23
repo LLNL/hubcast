@@ -8,7 +8,7 @@ dependencies:
   - any-glob-to-any-file:
     - .github/workflows/requirements/**
     - pyproject.toml
-    - spack.yaml
+    - spack/**
 
 docs:
 - changed-files:
