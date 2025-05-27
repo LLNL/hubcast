@@ -34,12 +34,11 @@ class GitHubClient:
         self.repo_owner = repo_owner
         self.repo_name = repo_name
 
-    async def set_check_status(self, ref: str, check_name: str, status: str):
+    async def set_check_status(
+        self, ref: str, check_name: str, status: str, details_url: str
+    ):
         # construct upload payload
-        payload = {
-            "name": check_name,
-            "head_sha": ref,
-        }
+        payload = {"name": check_name, "head_sha": ref, "details_url": details_url}
 
         # for success and failure status write out a conclusion
         if status in ("success", "failure", "cancelled"):
