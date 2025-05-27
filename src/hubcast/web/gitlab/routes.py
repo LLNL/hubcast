@@ -45,6 +45,7 @@ async def status_relay(event, gh, gh_check_name, *arg, **kwargs):
 
     # get status from event
     ci_status = event.data["object_attributes"]["status"]
+    pipeline_url = event.data["object_attributes"]["url"]
 
     # https://docs.github.com/en/rest/guides/using-the-rest-api-to-interact-with-checks#about-check-suites
     # https://docs.gitlab.com/api/pipelines/#list-project-pipelines -> status description
@@ -61,4 +62,4 @@ async def status_relay(event, gh, gh_check_name, *arg, **kwargs):
     else:
         status = ci_status
 
-    await gh.set_check_status(ref, gh_check_name, status)
+    await gh.set_check_status(ref, gh_check_name, status, pipeline_url)
