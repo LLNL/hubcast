@@ -16,4 +16,4 @@ spack:
   develop:
     py-hubcast:
       spec: py-hubcast@=main
-      path: $env
+      path: $env/../
