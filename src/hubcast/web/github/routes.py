@@ -263,10 +263,10 @@ async def respond_comment(event, gh, gl, gl_user, *arg, **kwargs):
     response = None
     plus_one = False
 
-    if re.search("/hubcast help", comment, re.IGNORECASE):
-        response = comments.help_message
+    if re.search(f"@{gh.bot_user} help", comment, re.IGNORECASE):
+        response = comments.help_message(gh.bot_user)
 
-    elif re.search("/hubcast approve", comment, re.IGNORECASE):
+    elif re.search(f"@{gh.bot_user} approve", comment, re.IGNORECASE):
         # syncs PR changes to the destination on behalf of the commenter
         # this does not handle PR deletions, those will need to be manually cleaned by project maintainers
         pull_request_id = event.data["issue"]["number"]
@@ -276,7 +276,7 @@ async def respond_comment(event, gh, gl, gl_user, *arg, **kwargs):
         # note: the user will see a +1 regardless of whether a sync truly occurred
         plus_one = True
 
-    elif re.search("/hubcast run pipeline", comment, re.IGNORECASE):
+    elif re.search(f"@{gh.bot_user} run pipeline", comment, re.IGNORECASE):
         pull_request_id = event.data["issue"]["number"]
         pull_request = await gh.get_pr(pull_request_id)
         # TODO do we want to sync the PR here in case it fell out of sync?
