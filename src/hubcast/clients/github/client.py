@@ -148,3 +148,16 @@ class GitHubClient:
 
             url = f"/repos/{self.repo_owner}/{self.repo_name}/issues/comments/{comment_id}/reactions"
             await gh.post(url, data=payload)
+
+    async def get_branch(self, name: str):
+        """Return individual branch data."""
+
+        gh_token = await self.auth.authenticate_installation(
+            self.repo_owner, self.repo_name
+        )
+
+        async with aiohttp.ClientSession() as session:
+            gh = gh_aiohttp.GitHubAPI(session, self.requester, oauth_token=gh_token)
+
+            url = f"/repos/{self.repo_owner}/{self.repo_name}/branches/{name}"
+            return await gh.getitem(url)

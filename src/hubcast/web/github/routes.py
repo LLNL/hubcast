@@ -308,3 +308,28 @@ async def respond_comment(event, gh, gl, gl_user, *arg, **kwargs):
 
     if plus_one:
         await gh.react_to_comment(event.data["comment"]["id"], "+1")
+
+
+@router.register("check_run", action="rerequested")
+async def rerun_check(event, gh, gl, gl_user, *arg, **kwargs):
+    """
+    Handles a user re-running a check run for the latest commit in the branch.
+    See https://docs.github.com/en/webhooks/webhook-events-and-payloads?actionType=rerequested#check_run.
+    """
+    src_fullname = event.data["repository"]["full_name"]
+    branch = event.data["check_run"]["check_suite"]["head_branch"]
+    check_run_commit = event.data["check_run"]["head_sha"]
+
+    # get the latest commit on the branch from GH
+    branch_data = await gh.get_branch(branch)
+    latest_commit = branch_data["commit"]["sha"]
+
+    # only rerun if this commit is the head of the branch
+    if check_run_commit != latest_commit:
+        log.info("user tried to re-run check for old commit")
+        return
+
+    # get the GL repo info and run the pipeline
+    repo_config = await get_repo_config(gh, src_fullname, refresh=True)
+    dest_fullname = f"{repo_config.dest_org}/{repo_config.dest_name}"
+    await gl.run_pipeline(dest_fullname, branch)
