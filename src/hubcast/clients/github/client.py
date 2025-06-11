@@ -1,5 +1,6 @@
 import base64
 import logging
+from urllib.parse import urlparse
 
 import aiohttp
 import yaml
@@ -41,8 +42,18 @@ class GitHubClient:
     async def set_check_status(
         self, ref: str, check_name: str, status: str, details_url: str
     ):
+        gitlab_netloc = urlparse(details_url).netloc
+
         # construct upload payload
-        payload = {"name": check_name, "head_sha": ref, "details_url": details_url}
+        payload = {
+            "name": check_name,
+            "head_sha": ref,
+            "details_url": details_url,
+            "output": {
+                "title": "External Pipeline Run",
+                "summary": f"[View this pipeline on {gitlab_netloc}]({details_url})",
+            },
+        }
 
         # for success and failure status write out a conclusion
         if status in ("success", "failure", "cancelled"):
