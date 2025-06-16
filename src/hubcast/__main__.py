@@ -1,4 +1,7 @@
+import json
 import logging
+import logging.config
+import os
 import sys
 
 from aiohttp import web
@@ -19,15 +22,25 @@ def main():
 
     try:
         conf = Config()
-    except ConfigError as e:
-        log.error(e)
+    except ConfigError:
+        log.exception("Error loading Hubcast config")
         sys.exit(1)
+
+    if os.path.exists(conf.logging_config_path):
+        with open(conf.logging_config_path) as f:
+            logging_config = json.load(f)
+        logging.config.dictConfig(logging_config)
+    else:
+        logging.basicConfig(level=logging.INFO)
 
     # error if we're unable to initialize an account map
     if conf.account_map_type == "file":
         account_map = FileMap(conf.account_map_path)
     else:
-        log.error(f"Error: Unknown Account Map Type: {conf.account_map_type}")
+        log.error(
+            "Unknown account map type",
+            extra={"account_map_type": conf.account_map_type},
+        )
         sys.exit(1)
 
     gh_client_factory = GitHubClientFactory(
@@ -52,13 +65,17 @@ def main():
         gh_client_factory,
     )
 
+    log.info("Starting HTTP server")
+
     app.router.add_post("/v1/events/src/github", gh_handler.handle)
     app.router.add_post("/v1/events/dest/gitlab", gl_handler.handle)
 
-    logging.basicConfig(level=logging.INFO)
-
     setup(app)
-    web.run_app(app, port=conf.port)
+    web.run_app(
+        app,
+        port=conf.port,
+        access_log_format='"%r" %s %b "%{Referer}i" "%{User-Agent}i"',
+    )
 
 
 if __name__ == "__main__":
