@@ -3,6 +3,7 @@ from typing import Dict
 
 from hubcast.clients.github import GitHubClient
 from hubcast.clients.github.client import InvalidConfigYAMLError
+from hubcast.clients.gitlab import GitLabSrcClient
 from hubcast.repos.config import RepoConfig
 
 config_cache = dict()
@@ -17,12 +18,15 @@ def create_config(fullname: str, data: Dict) -> RepoConfig:
     )
 
 
-async def get_repo_config(gh: GitHubClient, fullname: str, refresh: bool = False):
+async def get_repo_config(
+    src_client: GitHubClient | GitLabSrcClient, fullname: str, refresh: bool = False
+):
+    # the client must implement the get_repo_config method in the standard format
     if fullname in config_cache and not refresh:
         config = config_cache[fullname]
     else:
         try:
-            data = await gh.get_repo_config()
+            data = await src_client.get_repo_config()
         except InvalidConfigYAMLError:
             log.exception("Repo config parse failed")
 

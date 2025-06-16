@@ -9,10 +9,10 @@ from aiojobs.aiohttp import setup
 
 from hubcast.account_map.file import FileMap, FileMapError
 from hubcast.clients.github import GitHubClientFactory
-from hubcast.clients.gitlab import GitLabClientFactory
+from hubcast.clients.gitlab import GitLabClientFactory, GitLabSrcClientFactory
 from hubcast.config import Config, ConfigError
 from hubcast.web.github import GitHubHandler
-from hubcast.web.gitlab import GitLabHandler
+from hubcast.web.gitlab import GitLabHandler, GitLabSrcHandler
 
 log = logging.getLogger(__name__)
 
@@ -58,34 +58,55 @@ def main():
         )
         sys.exit(1)
 
-    gh_client_factory = GitHubClientFactory(
-        conf.gh.app_id, conf.gh.privkey, conf.gh.requester, conf.gh.bot_user
-    )
-    gl_client_factory = GitLabClientFactory(
-        conf.gl.instance_url,
-        conf.gl.requester,
-        conf.gl.token,
-        conf.gl.callback_url,
-        conf.gl.webhook_secret,
-        conf.gl.token_type,
+    # destination can only be gitlab
+    dest_client_factory = GitLabClientFactory(
+        conf.gl_dest.instance_url,
+        conf.gl_dest.access_token,
+        conf.gl_dest.callback_url,
+        conf.gl_dest.webhook_secret,
     )
 
-    gh_handler = GitHubHandler(
-        conf.gh.webhook_secret,
-        account_map,
-        gh_client_factory,
-        gl_client_factory,
-    )
+    if conf.src_service == "github":
+        src_client_factory = GitHubClientFactory(
+            conf.gh_src.app_id, conf.gh_src.privkey, conf.gh_src.requester
+        )
+        src_handler = GitHubHandler(
+            conf.gh_src.webhook_secret,
+            account_map,
+            src_client_factory,
+            dest_client_factory,
+        )
 
-    gl_handler = GitLabHandler(
-        conf.gl.webhook_secret,
-        gh_client_factory,
+    elif conf.src_service == "gitlab":
+        src_client_factory = GitLabClientFactory(
+            conf.gl_dest.instance_url,
+            conf.gl_dest.requester,
+            conf.gl_dest.token,
+            conf.gl_dest.callback_url,
+            conf.gl_dest.webhook_secret,
+            conf.gl_dest.token_type,
+        )
+        src_client_factory = GitLabSrcClientFactory(
+            conf.gl_src.instance_url, conf.gl_src.access_token, conf.gl_src.requester
+        )
+
+        src_handler = GitLabSrcHandler(
+            conf.gl_src.webhook_secret,
+            account_map,
+            src_client_factory,
+            dest_client_factory,
+        )
+
+    # destination can only be gitlab
+    dest_handler = GitLabHandler(
+        conf.gl_dest.webhook_secret,
+        src_client_factory,
     )
 
     log.info("Starting HTTP server")
 
-    app.router.add_post("/v1/events/src/github", gh_handler.handle)
-    app.router.add_post("/v1/events/dest/gitlab", gl_handler.handle)
+    app.router.add_post(f"/v1/events/src/{conf.src_service}", src_handler.handle)
+    app.router.add_post("/v1/events/dest/gitlab", dest_handler.handle)
 
     setup(app)
     web.run_app(
