@@ -6,6 +6,8 @@ from repligit.asyncio import fetch_pack, ls_remote, send_pack
 
 from hubcast.web.github.utils import get_repo_config
 
+log = logging.getLogger(__name__)
+
 
 class GitHubRouter(routing.Router):
     """
@@ -16,7 +18,17 @@ class GitHubRouter(routing.Router):
         """Dispatch an event to all registered function(s)."""
         found_callbacks = self.fetch(event)
         for callback in found_callbacks:
-            await callback(event, *args, **kwargs)
+            try:
+                await callback(event, *args, **kwargs)
+            except Exception:
+                # this catches errors related to processing of webhook events
+                log.exception(
+                    "Failed to process GitHub webhook event",
+                    extra={
+                        "event_type": event.event,
+                        "delivery_id": event.delivery_id,
+                    },
+                )
 
 
 router = GitHubRouter()
@@ -58,7 +70,10 @@ async def sync_branch(event, gh, gl, gl_user, *arg, **kwargs):
     from_sha = gl_refs.get(target_ref) or ("0" * 40)
 
     if want_sha in have_shas:
-        log.info(f"[{src_fullname}]: {target_ref} already up-to-date")
+        log.info(
+            "Target ref already up-to-date",
+            extra={"repo": src_fullname, "target_ref": target_ref},
+        )
         return
 
     packfile = await fetch_pack(
@@ -69,7 +84,14 @@ async def sync_branch(event, gh, gl, gl_user, *arg, **kwargs):
 
     gl_token = await gl.auth.authenticate_installation(gl_user)
 
-    log.info(f"[{src_fullname}]: mirroring {from_sha} -> {want_sha}")
+    log.info(
+        "Mirroring refs",
+        extra={
+            "repo": src_fullname,
+            "from_sha": from_sha,
+            "want_sha": want_sha,
+        },
+    )
     await send_pack(
         dest_remote_url,
         target_ref,
@@ -97,7 +119,7 @@ async def remove_branch(event, gh, gl, gl_user, *arg, **kwargs):
 
     gl_token = await gl.auth.authenticate_installation(gl_user)
 
-    log.info(f"[{src_fullname}]: deleting {target_ref}")
+    log.info("Deleting ref", extra={"repo": src_fullname, "target_ref": target_ref})
     await send_pack(
         dest_remote_url,
         target_ref,
@@ -144,7 +166,10 @@ async def sync_pr(event, gh, gl, gl_user, *arg, **kwargs):
     from_sha = gl_refs.get(target_ref) or ("0" * 40)
 
     if want_sha in have_shas:
-        log.info(f"[{src_fullname}]: {target_ref} already up-to-date")
+        log.info(
+            "Target ref already up-to-date",
+            extra={"repo": src_fullname, "target_ref": target_ref},
+        )
         return
 
     # fetch differential packfile with all new commits
@@ -157,7 +182,14 @@ async def sync_pr(event, gh, gl, gl_user, *arg, **kwargs):
     gl_token = await gl.auth.authenticate_installation(gl_user)
 
     # upload packfile to gitlab repository
-    log.info(f"[{src_fullname}]: mirroring {from_sha} -> {want_sha}")
+    log.info(
+        "Mirroring refs",
+        extra={
+            "repo": src_fullname,
+            "from_sha": from_sha,
+            "want_sha": want_sha,
+        },
+    )
     await send_pack(
         dest_remote_url,
         target_ref,
@@ -198,7 +230,7 @@ async def remove_pr(event, gh, gl, gl_user, *arg, **kwargs):
 
     gl_token = await gl.auth.authenticate_installation(gl_user)
 
-    log.info(f"[{src_fullname}]: deleting {target_ref}")
+    log.info("Deleting ref", extra={"repo": src_fullname, "target_ref": target_ref})
     await send_pack(
         dest_remote_url,
         target_ref,

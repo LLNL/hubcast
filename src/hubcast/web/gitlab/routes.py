@@ -1,6 +1,9 @@
+import logging
 from typing import Any
 
 from gidgetlab import routing, sansio
+
+log = logging.getLogger(__name__)
 
 
 class GitLabRouter(routing.Router):
@@ -27,7 +30,16 @@ class GitLabRouter(routing.Router):
                     if event_value in data_values:
                         found_callbacks.extend(data_values[event_value])
         for callback in found_callbacks:
-            await callback(event, *args, **kwargs)
+            try:
+                await callback(event, *args, **kwargs)
+            except Exception:
+                # this catches errors related to processing of webhook events
+                log.exception(
+                    "Failed to process GitLab webhook event",
+                    extra={
+                        "event_type": event.event,
+                    },
+                )
 
 
 router = GitLabRouter()
