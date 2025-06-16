@@ -6,12 +6,16 @@ class ConfigError(Exception):
     pass
 
 
+# TODO will need env variables based on which service is src
+
+
 class Config:
     def __init__(self):
         self.port = int(env_get("HC_PORT", default="8080"))
 
         self.account_map_type = env_get("HC_ACCOUNT_MAP_TYPE")
         self.account_map_path = env_get("HC_ACCOUNT_MAP_PATH")
+        self.src_service = env_get("HC_SRC_SERVICE", "").lower()
 
         self.gh = GitHubConfig()
         self.gl = GitLabConfig()

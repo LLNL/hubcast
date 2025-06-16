@@ -30,30 +30,52 @@ def main():
         log.error(f"Error: Unknown Account Map Type: {conf.account_map_type}")
         sys.exit(1)
 
-    gh_client_factory = GitHubClientFactory(
-        conf.gh.app_id, conf.gh.privkey, conf.gh.requester
-    )
-    gl_client_factory = GitLabClientFactory(
+    # destination can only be gitlab
+    dest_client_factory = GitLabClientFactory(
         conf.gl.instance_url,
         conf.gl.access_token,
         conf.gl.callback_url,
         conf.gl.webhook_secret,
     )
 
-    gh_handler = GitHubHandler(
-        conf.gh.webhook_secret,
-        account_map,
-        gh_client_factory,
-        gl_client_factory,
-    )
+    if conf.src_service == "github":
+        src_client_factory = GitHubClientFactory(
+            conf.gh.app_id, conf.gh.privkey, conf.gh.requester
+        )
+        src_handler = GitHubHandler(
+            conf.gh.webhook_secret,
+            account_map,
+            src_client_factory,
+            dest_client_factory,
+        )
 
-    gl_handler = GitLabHandler(
+    elif conf.src_service == "gitlab":
+        # TODO this needs to be modified to allow for source commands
+        src_client_factory = GitLabClientFactory(
+            conf.gl.instance_url,
+            conf.gl.access_token,
+            conf.gl.callback_url,
+            conf.gl.webhook_secret,
+        )
+
+        src_handler = GitLabHandler(
+            conf.gl.webhook_secret,
+            src_client_factory,
+            # TODO does this need to have dest here?
+        )
+    else:
+        log.error('the source service can only be one of "gitlab" or "github"')
+        sys.exit(1)
+
+    # destination can only be gitlab
+    dest_handler = GitLabHandler(
         conf.gl.webhook_secret,
-        gh_client_factory,
+        src_client_factory,
     )
 
-    app.router.add_post("/v1/events/src/github", gh_handler.handle)
-    app.router.add_post("/v1/events/dest/gitlab", gl_handler.handle)
+    # TODO why do these routes need to end in the name of the service?
+    app.router.add_post(f"/v1/events/src/{conf.src_service}", src_handler.handle)
+    app.router.add_post("/v1/events/dest/gitlab", dest_handler.handle)
 
     logging.basicConfig(level=logging.INFO)
 
