@@ -90,13 +90,25 @@ class GitHubClient:
             if data["encoding"] == "base64":
                 config_str = base64.b64decode(data["content"])
             else:
+                log.error(
+                    "Unknown repo config encoding",
+                    extra={
+                        "repo_owner": self.repo_owner,
+                        "repo_name": self.repo_name,
+                        "repo_config_encoding": data["encoding"],
+                    },
+                )
                 raise InvalidConfigEncodingError()
 
             try:
                 config = yaml.safe_load(config_str)
-            except yaml.YAMLError as exc:
-                log.error(
-                    f"[{self.repo_owner}/{self.repo_name}]: Unable to parse config: {exc}"
+            except yaml.YAMLError:
+                log.exception(
+                    "Failed to parse Hubcast repo config",
+                    extra={
+                        "repo_owner": self.repo_owner,
+                        "repo_name": self.repo_name,
+                    },
                 )
                 raise InvalidConfigYAMLError()
 
