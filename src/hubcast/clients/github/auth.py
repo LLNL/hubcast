@@ -133,7 +133,7 @@ class GitHubAuthenticator:
         except Exception:
             log.error(
                 "Failed to authenticate Github app installation",
-                {"installation_id": installation_id},
+                extra={"installation_id": installation_id},
             )
 
     def parse_isotime(self, timestr: str) -> int:
