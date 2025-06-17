@@ -57,9 +57,11 @@ class GitLabClient:
                 )
             except Exception:
                 logging.error(
-                    "Failed to authenticate Gitlab session. Verify access token.",
+                    "Failed to authenticate GitLab session. Verify access token.",
                     extra={"user": self.user, "url": self.instance_url},
                 )
+
+                return
 
             existing_hook = None
 
