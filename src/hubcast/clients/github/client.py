@@ -84,6 +84,7 @@ class GitHubClient:
 
             # get the contents of the repository hubcast.yml file
             url = f"/repos/{self.repo_owner}/{self.repo_name}/contents/.github/hubcast.yml"
+            # TODO do we want to ask for it with application/vnd.github.raw+json: Returns the raw file contents for files and symlinks.
             data = await gh.getitem(url)
 
             # decode returned file

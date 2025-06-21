@@ -1,10 +1,22 @@
+import logging
 import urllib.parse
 from typing import Dict
 
 import aiohttp
 import gidgetlab.aiohttp
+import yaml
 
 from .auth import GitLabAuthenticator
+
+log = logging.getLogger(__name__)
+
+
+class InvalidConfigEncodingError(Exception):
+    pass
+
+
+class InvalidConfigYAMLError(Exception):
+    pass
 
 
 class GitLabClientFactory:
@@ -24,6 +36,61 @@ class GitLabClientFactory:
             self.webhook_secret,
             gitlab_user,
         )
+
+
+class GitLabSrcClientFactory:
+    def __init__(self, instance_url, access_token, requester):
+        self.auth = GitLabAuthenticator(instance_url, access_token)
+        self.instance_url = instance_url
+        self.requester = requester
+
+    def create_client(self, repo_id):
+        # TODO: rewrite to support impersonation tokens
+        # by downscoping auth token for user
+        # TODO do we need the repo owner or anything here??? still confused about what the requester does
+        return GitLabSrcClient(self.auth, self.instance_url, self.requester, repo_id)
+
+
+class GitLabSrcClient:
+    def __init__(self, auth, instance_url, requester, repo_id):
+        self.auth = auth
+        self.instance_url = instance_url
+        self.requester = requester
+        self.repo_id = repo_id
+
+    async def get_repo_config(self):
+        # this argument to user doesn't do anything at the moment
+        # TODO is this really right???
+        gl_token = await self.auth.authenticate_installation(None)
+
+        async with aiohttp.ClientSession() as session:
+            gl = gidgetlab.aiohttp.GitLabAPI(
+                session, self.requester, access_token=gl_token, url=self.instance_url
+            )
+
+            # TODO does this need to be changed to somethijg mpre generic than .github?
+
+            filepath = urllib.parse.quote_plus(".github/hubcast.yml")
+            url = f"/projects/{self.repo_id}/repository/files/{filepath}/raw"
+
+            # TODO do you specify ref? what does the github thing assume? does it just get HEAD
+            # this should be documented somewhere
+
+            config_str = await gl.getitem(url)
+
+            # TODO this can be handled modularly after the file is fetched
+
+            try:
+                config = yaml.safe_load(config_str)
+            except yaml.YAMLError as exc:
+                # TODO replace with instance URL
+                log.error(f"[GITLAB {self.repo_id}]: Unable to parse config: {exc}")
+                raise InvalidConfigYAMLError()
+
+            return config
+
+
+# TODO implement set_check_status (this might be commit status in gitlab)
 
 
 class GitLabClient:
