@@ -56,10 +56,9 @@ async def sync_branch(event, gl_src, gl_dest, dest_user, *args, **kwargs):
     want_sha = event.data["after"]
     target_ref = event.data["ref"]
 
-    # TODO what is the provenance of requester? should this be the user that makes the PR?
+    # user who made the change is asked to authenticate
     src_token = await gl_src.auth.authenticate_installation(gl_src.requester)
 
-    # TODO test if it's a time sync issue
     # skip branches from push events that are also merge requests
     src_refs = await ls_remote(
         src_repo_url, username=gl_src.requester, password=src_token
@@ -96,6 +95,7 @@ async def sync_branch(event, gl_src, gl_dest, dest_user, *args, **kwargs):
 
     # TODO in other parts need to make it easier to have optional stuff
     # for the username/password
+    # TODO handle this on the github side as well and basically all methods in routes
     packfile = await fetch_pack(
         src_repo_url, want_sha, have_shas, username=gl_src.requester, password=src_token
     )

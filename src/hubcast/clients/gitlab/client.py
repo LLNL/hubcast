@@ -11,10 +11,6 @@ from .auth import GitLabAuthenticator
 log = logging.getLogger(__name__)
 
 
-class InvalidConfigEncodingError(Exception):
-    pass
-
-
 class InvalidConfigYAMLError(Exception):
     pass
 
@@ -29,6 +25,9 @@ class GitLabClientFactory:
     def create_client(self, gitlab_user):
         # TODO: rewrite to support impersonation tokens
         # by downscoping auth token for user
+        # for the destination client, the user is grabbed from the account map
+        # and will ultimately authenticate with the destination instance
+        # and run CI jobs as that user
         return GitLabClient(
             self.auth,
             self.instance_url,
@@ -45,9 +44,6 @@ class GitLabSrcClientFactory:
         self.requester = requester
 
     def create_client(self, repo_id):
-        # TODO: rewrite to support impersonation tokens
-        # by downscoping auth token for user
-        # TODO do we need the repo owner or anything here??? still confused about what the requester does
         return GitLabSrcClient(self.auth, self.instance_url, self.requester, repo_id)
 
 
@@ -59,9 +55,7 @@ class GitLabSrcClient:
         self.repo_id = repo_id
 
     async def get_repo_config(self):
-        # this argument to user doesn't do anything at the moment
-        # TODO is this really right???
-        gl_token = await self.auth.authenticate_installation(None)
+        gl_token = await self.auth.authenticate_installation(self.requester)
 
         async with aiohttp.ClientSession() as session:
             gl = gidgetlab.aiohttp.GitLabAPI(
@@ -91,13 +85,9 @@ class GitLabSrcClient:
         # status can be directly mapped from gitlab->gitlab
         payload = {"name": check_name, "target_url": details_url, "state": status}
 
-        # TODO gl_token = await self.auth.authenticate_installation(self.user)
-        gl_token = await self.auth.authenticate_installation(None)
+        gl_token = await self.auth.authenticate_installation(self.requester)
 
         async with aiohttp.ClientSession() as session:
-            # gl = gidgetlab.aiohttp.GitLabAPI(
-            #     session, self.user, access_token=gl_token, url=self.instance_url
-            # )
             gl = gidgetlab.aiohttp.GitLabAPI(
                 session, self.requester, access_token=gl_token, url=self.instance_url
             )

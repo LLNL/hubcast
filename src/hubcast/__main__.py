@@ -51,6 +51,12 @@ def main():
 
     elif conf.src_service == "gitlab":
         # TODO go back and consolidate the src* classes into src and dest
+
+        # unless impersonation tokens are used for the src (which doesn't make sense, because we want the src to have a bot handler, not a human)
+        # using a requester makes no sense, as all other gitlab tokens will behave as a bot (requester/user won't mean anything in calls to authenticate with GL)
+        # https://docs.gitlab.com/user/project/settings/project_access_tokens/#bot-users-for-projects
+        # the alternative is creating a bot user in gitlab, assigning it access to different projects/groups
+        # and generating a personal access token for that bot -- however, this means projects can't install the app, they'd have to request access
         src_client_factory = GitLabSrcClientFactory(
             conf.gl_src.instance_url, conf.gl_src.access_token, conf.gl_src.requester
         )

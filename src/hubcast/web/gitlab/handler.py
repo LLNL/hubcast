@@ -82,9 +82,9 @@ class GitLabSrcHandler:
 
             log.info(f"GL delivery ID: {event.event}")
             try:
-                # TODO push event gives you user_username,
-                # mr event gives you user["username"]--are they different? should be use userid instead?
-                # security implications? -- is this the git username of the user or the gitlab username?
+                # the Push Hook provides user_username
+                # the Merge Request Hook provides user["username"]
+                # they are equivalent -- can verify with the user ID or avatar URL
                 src_user = event.data.get("user", {}).get("username") or event.data.get(
                     "user_username"
                 )
