@@ -102,8 +102,6 @@ class GitLabSrcHandler:
             gl_src = self.src.create_client(src_repo_id)
             gl_dest = self.dest.create_client(dest_user)
 
-            # TODO how does this spawn event work in combination with the one above???
-            # we have different arguments...
             await spawn(
                 request,
                 router.dispatch(event, gl_src, gl_dest, dest_user),

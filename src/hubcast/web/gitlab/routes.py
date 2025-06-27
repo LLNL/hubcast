@@ -38,11 +38,11 @@ router = GitLabRouter()
 log = logging.getLogger(__name__)
 
 
-# TODO can you try to condition based on the after not being equal to something?
 @router.register("Push Hook")
 async def sync_branch(event, gl_src, gl_dest, dest_user, *args, **kwargs):
     """Sync a git branch to the destination."""
 
+    # TODO can you try to condition based on the after not being equal to something?
     # need to manually handle deleted branches unlike with github where they provide the attribute deleted
     if event.data["after"] == "0" * 40:
         await remove_branch(event, gl_src, gl_dest, dest_user, *args, **kwargs)
@@ -68,7 +68,6 @@ async def sync_branch(event, gl_src, gl_dest, dest_user, *args, **kwargs):
         src_refs[ref] for ref in src_refs if ref.startswith("refs/merge-requests/")
     ]
     if want_sha in pull_refs:
-        print("skipping sync of push bc that gets handled by MR")
         return
 
     repo_config = await get_repo_config(gl_src, src_fullname, refresh=True)
@@ -77,12 +76,13 @@ async def sync_branch(event, gl_src, gl_dest, dest_user, *args, **kwargs):
     dest_remote_url = f"{gl_dest.instance_url}/{dest_fullname}.git"
     # TODO will the webhook always be set up before this is called?
     webhook_data = {
-        # TODO is src_owner still necessary?
+        # TODO is src_owner still necessary? -- sync this up with github
         "src_owner": src_owner,
         "src_repo_id": repo_id,
         "src_check_name": repo_config.check_name,
         "src_service": "gitlab",
     }
+    # TODO should this get called every time or can we do it during another set-up? or init step
     await gl_dest.set_webhook(dest_fullname, webhook_data)
 
     # sync commits from source -> destination
@@ -158,7 +158,8 @@ async def sync_mr(event, gl_src, gl_dest, dest_user, *args, **kwawrgs):
     # mr-<mr-number> instead of as their branch name as conflicts could occur
     # between multiple repositories
     is_from_fork = (
-        src_fullname != event.data["object_attributes"]["target"]["git_http_url"]
+        event.data["object_attributes"]["source"]["id"]
+        != event.data["object_attributes"]["target"]["id"]
     )
     if is_from_fork:
         target_ref = f"refs/heads/mr-{merge_request_id}"
@@ -197,7 +198,6 @@ async def sync_mr(event, gl_src, gl_dest, dest_user, *args, **kwawrgs):
     )
 
 
-# TODO do this then handle the setting of commit status etc
 @router.register("Merge Request Hook", action="close")
 async def remove_mr(event, gl_src, gl_dest, dest_user, *args, **kwawrgs):
     src_fullname = event.data["object_attributes"]["source"]["path_with_namespace"]
@@ -208,7 +208,8 @@ async def remove_mr(event, gl_src, gl_dest, dest_user, *args, **kwawrgs):
     # to clean up the branch when the branch is deleted from the
     # internal repository
     is_from_fork = (
-        src_fullname != event.data["object_attributes"]["target"]["git_http_url"]
+        event.data["object_attributes"]["source"]["id"]
+        != event.data["object_attributes"]["target"]["id"]
     )
     if not is_from_fork:
         return
@@ -248,17 +249,17 @@ async def status_relay(
     event, src_service: str, src_client, src_check_name, *arg, **kwargs
 ):
     """Relay status of a GitLab pipeline back to GitHub."""
+    # get ref from event
+    ref = event.data["object_attributes"]["sha"]
+
+    # get status from event
+    ci_status = event.data["object_attributes"]["status"]
+    pipeline_url = event.data["object_attributes"]["url"]
+
     if src_service == "gitlab":
-        print("HANDLING COMMIT STATUS TO GITLAB")
-        return
+        # doesn't need to be mapped
+        status = ci_status
     elif src_service == "github":
-        # get ref from event
-        ref = event.data["object_attributes"]["sha"]
-
-        # get status from event
-        ci_status = event.data["object_attributes"]["status"]
-        pipeline_url = event.data["object_attributes"]["url"]
-
         # https://docs.github.com/en/rest/guides/using-the-rest-api-to-interact-with-checks#about-check-suites
         # https://docs.gitlab.com/api/pipelines/#list-project-pipelines -> status description
 
@@ -274,6 +275,8 @@ async def status_relay(
         else:
             status = ci_status
 
-        await src_client.set_check_status(ref, src_check_name, status, pipeline_url)
+    # both gitlab and github src clients have the same signature
+    await src_client.set_check_status(ref, src_check_name, status, pipeline_url)
 
-        # TODO We're also handling job event because I'd eventually like to allow folks to pick the granularity we forward back to GitHub so you could set it to job or to pipeline (default)
+    # TODO We're also handling job event because I'd eventually like to allow folks to pick the granularity we forward back to GitHub so you could set it to job or to pipeline (default)
+    # is this really possible?
