@@ -1,4 +1,3 @@
-import base64
 import logging
 
 import aiohttp
@@ -8,10 +7,6 @@ from gidgethub import aiohttp as gh_aiohttp
 from .auth import GitHubAuthenticator
 
 log = logging.getLogger(__name__)
-
-
-class InvalidConfigEncodingError(Exception):
-    pass
 
 
 class InvalidConfigYAMLError(Exception):
@@ -84,13 +79,8 @@ class GitHubClient:
 
             # get the contents of the repository hubcast.yml file
             url = f"/repos/{self.repo_owner}/{self.repo_name}/contents/.github/hubcast.yml"
-            data = await gh.getitem(url)
-
-            # decode returned file
-            if data["encoding"] == "base64":
-                config_str = base64.b64decode(data["content"])
-            else:
-                raise InvalidConfigEncodingError()
+            # get raw contents rather than base64 encoded text
+            config_str = await gh.getitem(url, accept="application/vnd.github.raw")
 
             try:
                 config = yaml.safe_load(config_str)
