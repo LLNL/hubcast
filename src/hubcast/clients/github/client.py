@@ -79,7 +79,7 @@ class GitHubClient:
 
             # get the contents of the repository hubcast.yml file
             url = f"/repos/{self.repo_owner}/{self.repo_name}/contents/.github/hubcast.yml"
-            # get raw contents rather than base64 encoded json
+            # get raw contents rather than base64 encoded text
             config_str = await gh.getitem(url, accept="application/vnd.github.raw+json")
 
             try:
