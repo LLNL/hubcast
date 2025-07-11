@@ -62,82 +62,6 @@ class GitLabSrcClientFactory:
         return GitLabSrcClient(self.auth, self.instance_url, self.requester, repo_id)
 
 
-class GitLabSrcClient:
-    def __init__(self, auth, instance_url, requester, repo_id):
-        self.auth = auth
-        self.instance_url = instance_url
-        self.requester = requester
-        self.repo_id = repo_id
-
-    async def get_repo_config(self):
-        gl_token = await self.auth.authenticate_installation(self.requester)
-
-        async with aiohttp.ClientSession() as session:
-            gl = gidgetlab.aiohttp.GitLabAPI(
-                session, self.requester, access_token=gl_token, url=self.instance_url
-            )
-
-            filepath = urllib.parse.quote_plus(".github/hubcast.yml")
-            url = f"/projects/{self.repo_id}/repository/files/{filepath}/raw"
-            config_str = await gl.getitem(url)
-
-            try:
-                config = yaml.safe_load(config_str)
-            except yaml.YAMLError as exc:
-                log.error(
-                    f"[{self.instance_url} -- {self.repo_id}]: Unable to parse config: {exc}"
-                )
-                raise InvalidConfigYAMLError()
-
-            return config
-
-    async def set_check_status(
-        self, ref: str, check_name: str, status: str, details_url: str
-    ):
-        """note: this is known as 'pipeline status' in Gitlab, but we keep the same signature from the Github implementation for consistency"""
-        # status can be directly mapped from gitlab->gitlab
-        payload = {"name": check_name, "target_url": details_url, "state": status}
-
-        gl_token = await self.auth.authenticate_installation(self.requester)
-
-        async with aiohttp.ClientSession() as session:
-            gl = gidgetlab.aiohttp.GitLabAPI(
-                session, self.requester, access_token=gl_token, url=self.instance_url
-            )
-
-            # get a list of the current checks on a commit
-            url = f"/projects/{self.repo_id}/repository/commits/{ref}/statuses"
-            data = await gl.getitem(url)
-
-            # search for existing check
-            existing_check = None
-            for check in data:
-                if check["name"] == check_name:
-                    existing_check = check
-                    break
-
-            if existing_check:
-                # The ID of the pipeline to set status. Use in case of several pipeline on same SHA.
-                payload["pipeline_id"] = existing_check["pipeline_id"]
-            # else the status, failed, or canceled status will get forwarded
-
-            url = f"/projects/{self.repo_id}/statuses/{ref}"
-            try:
-                await gl.post(url, data=payload)
-            except Exception as exc:
-                if "Cannot transition status" in str(exc):
-                    # see https://forum.gitlab.com/t/cannot-transition-status-via-run-from-running-reason-s-status-cannot-transition-via-run/42588/7
-                    # the program enters this state if the pipeline/commit status is updated to a status ≤ the current status
-                    # for instance, setting it to pending when it's already running
-                    # this also means that we can't update other parts of the payload (eg target_url) without increasing the "value" of the status
-                    # i've seen this exception when gl.post() call to update the status to `running` is sent before the `pending` state
-                    # we ignore the exception in this case as the user is still receiving up-to-date information about the status of their pipeline
-                    # the events arrive in a jumbled order sometimes pending -> running -> created
-                    pass
-                else:
-                    print(exc)
-
-
 class GitLabClient:
     def __init__(
         self,
@@ -273,3 +197,79 @@ class GitLabClient:
             )
 
             return pipeline.get("web_url")
+
+
+class GitLabSrcClient:
+    def __init__(self, auth, instance_url, requester, repo_id):
+        self.auth = auth
+        self.instance_url = instance_url
+        self.requester = requester
+        self.repo_id = repo_id
+
+    async def get_repo_config(self):
+        gl_token = await self.auth.authenticate_installation(self.requester)
+
+        async with aiohttp.ClientSession() as session:
+            gl = gidgetlab.aiohttp.GitLabAPI(
+                session, self.requester, access_token=gl_token, url=self.instance_url
+            )
+
+            filepath = urllib.parse.quote_plus(".github/hubcast.yml")
+            url = f"/projects/{self.repo_id}/repository/files/{filepath}/raw"
+            config_str = await gl.getitem(url)
+
+            try:
+                config = yaml.safe_load(config_str)
+            except yaml.YAMLError as exc:
+                log.error(
+                    f"[{self.instance_url} -- {self.repo_id}]: Unable to parse config: {exc}"
+                )
+                raise InvalidConfigYAMLError()
+
+            return config
+
+    async def set_check_status(
+        self, ref: str, check_name: str, status: str, details_url: str
+    ):
+        """note: this is known as 'pipeline status' in Gitlab, but we keep the same signature from the Github implementation for consistency"""
+        # status can be directly mapped from gitlab->gitlab
+        payload = {"name": check_name, "target_url": details_url, "state": status}
+
+        gl_token = await self.auth.authenticate_installation(self.requester)
+
+        async with aiohttp.ClientSession() as session:
+            gl = gidgetlab.aiohttp.GitLabAPI(
+                session, self.requester, access_token=gl_token, url=self.instance_url
+            )
+
+            # get a list of the current checks on a commit
+            url = f"/projects/{self.repo_id}/repository/commits/{ref}/statuses"
+            data = await gl.getitem(url)
+
+            # search for existing check
+            existing_check = None
+            for check in data:
+                if check["name"] == check_name:
+                    existing_check = check
+                    break
+
+            if existing_check:
+                # The ID of the pipeline to set status. Use in case of several pipeline on same SHA.
+                payload["pipeline_id"] = existing_check["pipeline_id"]
+            # else the status, failed, or canceled status will get forwarded
+
+            url = f"/projects/{self.repo_id}/statuses/{ref}"
+            try:
+                await gl.post(url, data=payload)
+            except Exception as exc:
+                if "Cannot transition status" in str(exc):
+                    # see https://forum.gitlab.com/t/cannot-transition-status-via-run-from-running-reason-s-status-cannot-transition-via-run/42588/7
+                    # the program enters this state if the pipeline/commit status is updated to a status ≤ the current status
+                    # for instance, setting it to pending when it's already running
+                    # this also means that we can't update other parts of the payload (eg target_url) without increasing the "value" of the status
+                    # i've seen this exception when gl.post() call to update the status to `running` is sent before the `pending` state
+                    # we ignore the exception in this case as the user is still receiving up-to-date information about the status of their pipeline
+                    # the events arrive in a jumbled order sometimes pending -> running -> created
+                    pass
+                else:
+                    print(exc)
