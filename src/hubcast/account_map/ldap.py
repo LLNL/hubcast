@@ -8,7 +8,6 @@ import ldap.sasl
 from .abc import AccountMap
 
 log = logging.getLogger(__name__)
-logging.basicConfig(level=logging.DEBUG)
 
 # 5 seconds (default is ~30, which is too long)
 ldap.set_option(ldap.OPT_NETWORK_TIMEOUT, 5)
