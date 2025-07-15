@@ -22,8 +22,8 @@ def main():
 
     try:
         conf = Config()
-    except ConfigError:
-        log.exception("Error loading Hubcast config")
+    except ConfigError as exc:
+        log.error(exc)
         sys.exit(1)
 
     if os.path.exists(conf.logging_config_path):
