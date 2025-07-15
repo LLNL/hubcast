@@ -27,9 +27,20 @@ def main():
         sys.exit(1)
 
     if os.path.exists(conf.logging_config_path):
-        with open(conf.logging_config_path) as f:
-            logging_config = json.load(f)
-        logging.config.dictConfig(logging_config)
+        try:
+            with open(conf.logging_config_path) as f:
+                logging_config = json.load(f)
+            logging.config.dictConfig(logging_config)
+        except (
+            json.decoder.JSONDecodeError,
+            # calls to dictConfig will raise the following exceptions (cf stdlib docs):
+            ValueError,
+            TypeError,
+            AttributeError,
+            ImportError,
+        ):
+            log.exception("Error loading logging config")
+            sys.exit(1)
     else:
         logging.basicConfig(level=logging.INFO)
 
