@@ -99,13 +99,7 @@ class GitHubAuthenticator:
         token from github, if necessary.
         """
 
-        try:
-            installation_id = await self.get_installation_id(owner, repo)
-        except Exception:
-            log.error(
-                "Failed to get Github installation ID",
-                extra={"repo_owner": owner, "repo_name": repo},
-            )
+        installation_id = await self.get_installation_id(owner, repo)
 
         async def renew_installation_token():
             async with aiohttp.ClientSession() as session:
