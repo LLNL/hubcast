@@ -4,7 +4,7 @@ from typing import Any
 from gidgethub import routing, sansio
 from repligit.asyncio import fetch_pack, ls_remote, send_pack
 
-from hubcast.web.github.utils import get_repo_config
+from hubcast.web.utils import get_repo_config
 
 
 class GitHubRouter(routing.Router):
@@ -27,7 +27,7 @@ log = logging.getLogger(__name__)
 # Push Events
 # -----------------------------------
 @router.register("push", deleted=False)
-async def sync_branch(event, gh, gl, gl_user, *arg, **kwargs):
+async def sync_branch(event, gh, gl, gl_user, *args, **kwargs):
     """Sync the git branch referenced to GitLab."""
     src_repo_url = event.data["repository"]["clone_url"]
     src_fullname = event.data["repository"]["full_name"]
@@ -46,9 +46,10 @@ async def sync_branch(event, gh, gl, gl_user, *arg, **kwargs):
 
     # setup callback webhook on GitLab
     webhook_data = {
-        "gh_owner": src_owner,
-        "gh_repo": src_repo_name,
-        "gh_check": repo_config.check_name,
+        "src_owner": src_owner,
+        "src_repo_name": src_repo_name,
+        "src_check_name": repo_config.check_name,
+        "src_service": "github",
     }
     await gl.set_webhook(dest_fullname, webhook_data)
 
@@ -82,7 +83,7 @@ async def sync_branch(event, gh, gl, gl_user, *arg, **kwargs):
 
 
 @router.register("push", deleted=True)
-async def remove_branch(event, gh, gl, gl_user, *arg, **kwargs):
+async def remove_branch(event, gh, gl, gl_user, *args, **kwargs):
     src_fullname = event.data["repository"]["full_name"]
     target_ref = event.data["ref"]
 
@@ -115,7 +116,7 @@ async def remove_branch(event, gh, gl, gl_user, *arg, **kwargs):
 @router.register("pull_request", action="opened")
 @router.register("pull_request", action="reopened")
 @router.register("pull_request", action="synchronize")
-async def sync_pr(event, gh, gl, gl_user, *arg, **kwargs):
+async def sync_pr(event, gh, gl, gl_user, *args, **kwargs):
     """Sync the git fork/branch referenced in a PR to GitLab."""
     pull_request = event.data["pull_request"]
     pull_request_id = pull_request["number"]
@@ -170,7 +171,7 @@ async def sync_pr(event, gh, gl, gl_user, *arg, **kwargs):
 
 
 @router.register("pull_request", action="closed")
-async def remove_pr(event, gh, gl, gl_user, *arg, **kwargs):
+async def remove_pr(event, gh, gl, gl_user, *args, **kwargs):
     pull_request = event.data["pull_request"]
     src_fullname = pull_request["head"]["repo"]["full_name"]
 
