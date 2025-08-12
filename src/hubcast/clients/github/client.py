@@ -84,9 +84,13 @@ class GitHubClient:
 
             try:
                 config = yaml.safe_load(config_str)
-            except yaml.YAMLError as exc:
-                log.error(
-                    f"[{self.repo_owner}/{self.repo_name}]: Unable to parse config: {exc}"
+            except yaml.YAMLError:
+                log.exception(
+                    "Failed to parse Hubcast repo config",
+                    extra={
+                        "repo_owner": self.repo_owner,
+                        "repo_name": self.repo_name,
+                    },
                 )
                 raise InvalidConfigYAMLError()
 

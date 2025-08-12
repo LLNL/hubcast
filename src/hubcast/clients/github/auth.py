@@ -1,3 +1,4 @@
+import logging
 import time
 from typing import Awaitable, Callable, Tuple
 
@@ -7,6 +8,8 @@ from gidgethub import aiohttp as gh_aiohttp
 
 #: location for authenticated app to get a token for one of its installations
 INSTALLATION_TOKEN_URL = "app/installations/{installation_id}/access_tokens"
+
+log = logging.getLogger(__name__)
 
 
 class TokenCache:
@@ -80,7 +83,13 @@ class GitHubAuthenticator:
                 )
                 self._id_dict[(owner, repo)] = result["id"]
 
-        return self._id_dict[(owner, repo)]
+        try:
+            return self._id_dict[(owner, repo)]
+        except Exception:
+            log.error(
+                "Failed to get Github installation id",
+                extra={"repo_owner": owner, "repo_name": repo},
+            )
 
     async def authenticate_installation(self, owner: str, repo: str) -> str:
         """
@@ -88,6 +97,7 @@ class GitHubAuthenticator:
         Renew the JWT if necessary, then use it to get an installation access
         token from github, if necessary.
         """
+
         installation_id = await self.get_installation_id(owner, repo)
 
         async def renew_installation_token():
@@ -109,7 +119,15 @@ class GitHubAuthenticator:
                 token = result["token"]
                 return (expires, token)
 
-        return await self._tokens.get_token(installation_id, renew_installation_token)
+        try:
+            return await self._tokens.get_token(
+                installation_id, renew_installation_token
+            )
+        except Exception:
+            log.error(
+                "Failed to authenticate Github app installation",
+                extra={"installation_id": installation_id},
+            )
 
     def parse_isotime(self, timestr: str) -> int:
         """Convert UTC ISO 8601 time stamp to seconds in epoch"""
@@ -130,4 +148,10 @@ class GitHubAuthenticator:
             # gidgethub JWT's expire after 10 minutes (you cannot change it)
             return (now + 10 * 60), jwt
 
-        return await self._tokens.get_token("JWT", renew_jwt)
+        try:
+            return await self._tokens.get_token("JWT", renew_jwt)
+        except Exception:
+            log.error(
+                "Failed to generate Github JWT. Check validity of HC_GH_PRIVATE_KEY.",
+                extra={"github_app_id": self.app_id},
+            )
