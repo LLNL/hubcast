@@ -1,3 +1,4 @@
+import logging
 import urllib.parse
 from typing import Dict
 
@@ -5,6 +6,8 @@ import aiohttp
 import gidgetlab.aiohttp
 
 from .auth import GitLabAuthenticator
+
+log = logging.getLogger(__name__)
 
 
 class GitLabClientFactory:
@@ -80,3 +83,24 @@ class GitLabClient:
             if changed:
                 url = f"/projects/{repo_id}/hooks/{existing_hook['id']}"
                 await gl.put(url, data=new_hook)
+
+    async def run_pipeline(self, gl_fullname: str, ref: str) -> str:
+        # (re) run a pipeline from an arbitrary gitlab repo/branch
+        # returns the pipeline's url
+        gl_token = await self.auth.authenticate_installation(self.user)
+
+        async with aiohttp.ClientSession() as session:
+            gl = gidgetlab.aiohttp.GitLabAPI(
+                session, self.user, access_token=gl_token, url=self.instance_url
+            )
+
+            repo_id = urllib.parse.quote_plus(gl_fullname)
+
+            try:
+                pipeline = await gl.post(
+                    f"/projects/{repo_id}/pipeline?ref={ref}", data={}
+                )
+
+                return pipeline["web_url"]
+            except Exception as e:
+                log.error(f"could not start pipeline: {e}")
