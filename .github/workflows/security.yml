@@ -1,0 +1,37 @@
+name: Security Checks
+on:
+  # This Workflow can be triggered manually
+  workflow_dispatch:
+  workflow_call:
+
+
+jobs:
+  security:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683
+
+      # https://bandit.readthedocs.io/en/latest/faq.html#under-which-version-of-python-should-i-install-bandit
+      - name: Set up Python 3.10
+        uses: actions/setup-python@8d9ed9ac5c53483de85588cdf95a591a75ab9f55
+        with:
+          python-version: '3.10'
+          cache: 'pip'
+          cache-dependency-path: '.github/workflows/requirements/security.txt'
+
+      - name: Install Python dependencies
+        run: |
+          pip install -r .github/workflows/requirements/security.txt
+
+      - name: Run Bandit
+        run: |
+          # bandit should not exit before the results are uploaded to github
+          bandit -r src -f sarif -o results.sarif || true
+
+      # upload security results to github; a bot will add inline comments to the PR if any issues are found
+      # https://docs.github.com/en/code-security/code-scanning/integrating-with-code-scanning/uploading-a-sarif-file-to-github
+      - name: Upload SARIF file
+        uses: github/codeql-action/upload-sarif@v3
+        with:
+          sarif_file: results.sarif
+          category: bandit

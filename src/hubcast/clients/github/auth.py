@@ -6,7 +6,7 @@ import gidgethub.apps as gha
 from gidgethub import aiohttp as gh_aiohttp
 
 #: location for authenticated app to get a token for one of its installations
-INSTALLATION_TOKEN_URL = "app/installations/{installation_id}/access_tokens"
+INSTALLATION_TOKEN_URL = "app/installations/{installation_id}/access_tokens"  # nosec B105
 
 
 class TokenCache:
