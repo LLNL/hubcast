@@ -32,7 +32,6 @@ class GitHubRouter(routing.Router):
 
 
 router = GitHubRouter()
-log = logging.getLogger(__name__)
 
 
 # -----------------------------------

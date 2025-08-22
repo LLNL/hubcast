@@ -8,7 +8,7 @@ from gidgethub import aiohttp as gh_aiohttp
 
 # location for authenticated app to get a token for one of its installations
 # bandit thinks this is a hardcoded password, we ignore security checks on this line
-INSTALLATION_TOKEN_URL = "app/installations/{installation_id}/access_tokens"  # nosec B105
+INSTALLATION_TOKEN_URL = "/app/installations/{installation_id}/access_tokens"  # nosec B105
 
 log = logging.getLogger(__name__)
 
@@ -84,13 +84,7 @@ class GitHubAuthenticator:
                 )
                 self._id_dict[(owner, repo)] = result["id"]
 
-        try:
-            return self._id_dict[(owner, repo)]
-        except Exception:
-            log.error(
-                "Failed to get Github installation id",
-                extra={"repo_owner": owner, "repo_name": repo},
-            )
+        return self._id_dict[(owner, repo)]
 
     async def authenticate_installation(self, owner: str, repo: str) -> str:
         """
@@ -120,15 +114,7 @@ class GitHubAuthenticator:
                 token = result["token"]
                 return (expires, token)
 
-        try:
-            return await self._tokens.get_token(
-                installation_id, renew_installation_token
-            )
-        except Exception:
-            log.error(
-                "Failed to authenticate Github app installation",
-                extra={"installation_id": installation_id},
-            )
+        return await self._tokens.get_token(installation_id, renew_installation_token)
 
     def parse_isotime(self, timestr: str) -> int:
         """Convert UTC ISO 8601 time stamp to seconds in epoch"""
@@ -149,10 +135,4 @@ class GitHubAuthenticator:
             # gidgethub JWT's expire after 10 minutes (you cannot change it)
             return (now + 10 * 60), jwt
 
-        try:
-            return await self._tokens.get_token("JWT", renew_jwt)
-        except Exception:
-            log.error(
-                "Failed to generate Github JWT. Check validity of HC_GH_PRIVATE_KEY.",
-                extra={"github_app_id": self.app_id},
-            )
+        return await self._tokens.get_token("JWT", renew_jwt)

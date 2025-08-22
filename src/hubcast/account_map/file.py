@@ -1,11 +1,12 @@
-import logging
 from typing import Dict, Union
 
 import yaml
 
 from .abc import AccountMap
 
-log = logging.getLogger(__name__)
+
+class FileMapError(Exception):
+    pass
 
 
 class FileMap(AccountMap):
@@ -37,9 +38,9 @@ class FileMap(AccountMap):
                 data = yaml.safe_load(f)
                 self.users = data["Users"]
         except FileNotFoundError:
-            log.error("Account map file not found", extra={"path": path})
+            raise FileMapError(f"File map not found. path={path}")
         except yaml.YAMLError:
-            log.exception("Failed to parse file map YAML", extra={"path": path})
+            raise FileMapError(f"Failed to parse file map. path={path}")
 
     def __call__(self, github_user: str) -> Union[str, None]:
         """

@@ -1,4 +1,3 @@
-import logging
 import urllib.parse
 from typing import Dict
 
@@ -6,8 +5,6 @@ import aiohttp
 import gidgetlab.aiohttp
 
 from .auth import GitLabAuthenticator
-
-log = logging.getLogger(__name__)
 
 
 class GitLabClientFactory:
@@ -51,17 +48,9 @@ class GitLabClient:
         }
 
         async with aiohttp.ClientSession() as session:
-            try:
-                gl = gidgetlab.aiohttp.GitLabAPI(
-                    session, self.user, access_token=gl_token, url=self.instance_url
-                )
-            except Exception:
-                logging.error(
-                    "Failed to authenticate GitLab session. Verify access token.",
-                    extra={"user": self.user, "url": self.instance_url},
-                )
-
-                return
+            gl = gidgetlab.aiohttp.GitLabAPI(
+                session, self.user, access_token=gl_token, url=self.instance_url
+            )
 
             existing_hook = None
 

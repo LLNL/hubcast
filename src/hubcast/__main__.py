@@ -7,7 +7,7 @@ import sys
 from aiohttp import web
 from aiojobs.aiohttp import setup
 
-from hubcast.account_map.file import FileMap
+from hubcast.account_map.file import FileMap, FileMapError
 from hubcast.clients.github import GitHubClientFactory
 from hubcast.clients.gitlab import GitLabClientFactory
 from hubcast.config import Config, ConfigError
@@ -33,20 +33,24 @@ def main():
             logging.config.dictConfig(logging_config)
         except (
             json.decoder.JSONDecodeError,
-            # calls to dictConfig will raise the following exceptions (cf stdlib docs):
+            # calls to logging.config.dictConfig will raise the following exceptions (cf stdlib docs):
             ValueError,
             TypeError,
             AttributeError,
             ImportError,
-        ):
-            log.exception("Error loading logging config")
+        ) as exc:
+            log.error(exc)
             sys.exit(1)
     else:
         logging.basicConfig(level=logging.INFO)
 
     # error if we're unable to initialize an account map
     if conf.account_map_type == "file":
-        account_map = FileMap(conf.account_map_path)
+        try:
+            account_map = FileMap(conf.account_map_path)
+        except FileMapError:
+            log.exception("Error initializing file account map")
+            sys.exit(1)
     else:
         log.error(
             "Unknown account map type",
