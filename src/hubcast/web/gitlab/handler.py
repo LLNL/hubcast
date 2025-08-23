@@ -51,6 +51,5 @@ class GitLabHandler:
             return web.Response(status=500)
 
         except Exception:
-            # this catches errors related to GitLab API calls
             log.exception("Failed to handle GitLab webhook")
             return web.Response(status=500)
