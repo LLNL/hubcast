@@ -279,7 +279,8 @@ async def respond_comment(event, gh, gl, gl_user, *arg, **kwargs):
     elif re.search(f"@{gh.bot_user} run pipeline", comment, re.IGNORECASE):
         pull_request_id = event.data["issue"]["number"]
         pull_request = await gh.get_pr(pull_request_id)
-        # TODO do we want to sync the PR here in case it fell out of sync?
+        # sync the PR in case it fell out of sync
+        await sync_pr(pull_request, gh, gl, gl_user)
 
         # get the branch this PR belongs to
         src_fullname = pull_request["head"]["repo"]["full_name"]
