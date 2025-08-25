@@ -214,7 +214,9 @@ class GitLabSrcClient:
                 session, self.requester, access_token=gl_token, url=self.instance_url
             )
 
-            filepath = urllib.parse.quote_plus(".github/hubcast.yml")
+            # get the contents of the repository hubcast.yml file
+            # the forge is github so the config will be under .github
+            filepath = urllib.parse.quote_plus(".gitlab/hubcast.yml")
             url = f"/projects/{self.repo_id}/repository/files/{filepath}/raw"
             config_str = await gl.getitem(url)
 

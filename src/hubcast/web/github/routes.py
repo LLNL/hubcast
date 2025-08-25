@@ -158,7 +158,7 @@ async def sync_pr(pull_request, gh, gl, gl_user):
     else:
         target_ref = f"refs/heads/{pull_request['head']['ref']}"
 
-    # get the repository configuration from .github/hubcast.yml
+    # get the repository configuration
     repo_config = await get_repo_config(gh, src_fullname)
 
     dest_fullname = f"{repo_config.dest_org}/{repo_config.dest_name}"
@@ -230,7 +230,7 @@ async def remove_pr(event, gh, gl, gl_user, *args, **kwargs):
     pull_request_id = pull_request["number"]
     target_ref = f"refs/heads/pr-{pull_request_id}"
 
-    # get the repository configuration from .github/hubcast.yml
+    # get the repository configuration
     repo_config = await get_repo_config(gh, src_fullname)
 
     dest_fullname = f"{repo_config.dest_org}/{repo_config.dest_name}"
