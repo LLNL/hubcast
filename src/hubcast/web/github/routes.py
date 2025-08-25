@@ -62,7 +62,7 @@ async def sync_branch(event, gh, gl, gl_user, *args, **kwargs):
         "src_owner": src_owner,
         "src_repo_name": src_repo_name,
         "src_check_name": repo_config.check_name,
-        "src_service": "github",
+        "src_forge": "github",
     }
     await gl.set_webhook(dest_fullname, webhook_data)
 

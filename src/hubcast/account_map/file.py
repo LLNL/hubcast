@@ -29,7 +29,7 @@ class FileMap(AccountMap):
     def __init__(self, path: str):
         """
         Constructor, path to read from and generate a simple account
-        mapping between services (eg gitlab->gitlab or github->gitlab).
+        mapping between forges (eg gitlab->gitlab or github->gitlab).
         """
         self.path = path
 
@@ -42,8 +42,8 @@ class FileMap(AccountMap):
         except yaml.YAMLError:
             raise FileMapError(f"Failed to parse file map. path={path}")
 
-    def __call__(self, src_user: str) -> Union[str, None]:
+    def __call__(self, src_forge_user: str) -> Union[str, None]:
         """
-        Return the gitlab_user for a src_user if one exists.
+        Return the dest_forge_user for a src_forge_user if one exists.
         """
-        return self.users.get(src_user)
+        return self.users.get(src_forge_user)
