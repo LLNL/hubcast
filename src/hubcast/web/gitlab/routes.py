@@ -84,7 +84,7 @@ async def sync_branch(event, gl_src, gl_dest, dest_user, *args, **kwargs):
     webhook_data = {
         "src_repo_id": repo_id,
         "src_check_name": repo_config.check_name,
-        "src_service": "gitlab",
+        "src_forge": "gitlab",
     }
     await gl_dest.set_webhook(dest_fullname, webhook_data)
 
@@ -247,7 +247,7 @@ async def remove_mr(event, gl_src, gl_dest, dest_user, *args, **kwawrgs):
 @router.register("Pipeline Hook", status="failed")
 @router.register("Pipeline Hook", status="canceled")
 async def status_relay(
-    event, src_service: str, src_client, src_check_name, *arg, **kwargs
+    event, src_forge: str, src_client, src_check_name, *arg, **kwargs
 ):
     """Relay status of a GitLab pipeline back to GitHub."""
     # get ref from event
@@ -257,10 +257,10 @@ async def status_relay(
     ci_status = event.data["object_attributes"]["status"]
     pipeline_url = event.data["object_attributes"]["url"]
 
-    if src_service == "gitlab":
+    if src_forge == "gitlab":
         # doesn't need to be mapped
         status = ci_status
-    elif src_service == "github":
+    elif src_forge == "github":
         # https://docs.github.com/en/rest/guides/using-the-rest-api-to-interact-with-checks#about-check-suites
         # https://docs.gitlab.com/api/pipelines/#list-project-pipelines -> status description
 

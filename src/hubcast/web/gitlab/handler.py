@@ -31,27 +31,27 @@ class GitLabHandler:
             )
             log.info("GitLab webhook received", extra={"event_type": event.event})
 
-            src_service = request.rel_url.query["src_service"]
+            src_forge = request.rel_url.query["src_forge"]
             src_check_name = request.rel_url.query["src_check_name"]
 
             # get corresponding GitHub repo owner and name from event request variables
-            # create_client takes different args depending on the service
-            # required webhook data in the query args also depends on the service
-            if src_service == "github":
+            # create_client takes different args depending on the forge
+            # required webhook data in the query args also depends on the forge
+            if src_forge == "github":
                 src_repo_name = request.rel_url.query["src_repo_name"]
                 src_repo_owner = request.rel_url.query["src_owner"]
                 src_client = self.src_client_factory.create_client(
                     src_repo_owner, src_repo_name
                 )
-            elif src_service == "gitlab":
+            elif src_forge == "gitlab":
                 src_repo_id = request.rel_url.query["src_repo_id"]
                 src_client = self.src_client_factory.create_client(src_repo_id)
             else:
-                log.warning(f"invalid src service {src_service}")
+                log.warning(f"invalid src forge {src_forge}")
 
             await spawn(
                 request,
-                router.dispatch(event, src_service, src_client, src_check_name),
+                router.dispatch(event, src_forge, src_client, src_check_name),
             )
 
             # return a "Success"
