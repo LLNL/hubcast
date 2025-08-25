@@ -17,14 +17,14 @@ class Config:
         self.account_map_type = env_get("HC_ACCOUNT_MAP_TYPE")
         self.account_map_path = env_get("HC_ACCOUNT_MAP_PATH")
         self.logging_config_path = env_get("HC_LOGGING_CONFIG_PATH")
-        self.src_service = env_get("HC_SRC_SERVICE", "").lower()
+        self.src_forge = env_get("HC_SRC_FORGE", "").lower()
 
-        if self.src_service == "github":
+        if self.src_forge == "github":
             self.gh_src = GitHubSrcConfig()
-        elif self.src_service == "gitlab":
+        elif self.src_forge == "gitlab":
             self.gl_src = GitLabSrcConfig()
         else:
-            log.error('the source service can only be one of "gitlab" or "github"')
+            log.error('the source forge can only be one of "gitlab" or "github"')
             sys.exit(1)
 
         self.gl_dest = GitLabDestConfig()

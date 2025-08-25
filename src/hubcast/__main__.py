@@ -66,7 +66,7 @@ def main():
         conf.gl_dest.webhook_secret,
     )
 
-    if conf.src_service == "github":
+    if conf.src_forge == "github":
         src_client_factory = GitHubClientFactory(
             conf.gh_src.app_id, conf.gh_src.privkey, conf.gh_src.requester
         )
@@ -77,7 +77,7 @@ def main():
             dest_client_factory,
         )
 
-    elif conf.src_service == "gitlab":
+    elif conf.src_forge == "gitlab":
         src_client_factory = GitLabClientFactory(
             conf.gl_dest.instance_url,
             conf.gl_dest.requester,
@@ -105,7 +105,7 @@ def main():
 
     log.info("Starting HTTP server")
 
-    app.router.add_post(f"/v1/events/src/{conf.src_service}", src_handler.handle)
+    app.router.add_post(f"/v1/events/src/{conf.src_forge}", src_handler.handle)
     app.router.add_post("/v1/events/dest/gitlab", dest_handler.handle)
 
     setup(app)

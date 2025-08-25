@@ -8,8 +8,8 @@ class AccountMap(ABC):
     """
 
     @abstractmethod
-    def __call__(self, src_user: str) -> Union[str, None]:
+    def __call__(self, src_forge_user: str) -> Union[str, None]:
         """
-        Return the corresponding gitlab_user for a given src_user if one exists.
+        Return the corresponding dest_forge_user for a given src_forge_user if one exists.
         """
         pass
