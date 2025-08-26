@@ -85,8 +85,11 @@ class GitLabClient:
                 await gl.put(url, data=new_hook)
 
     async def run_pipeline(self, gl_fullname: str, ref: str) -> str:
-        # (re) run a pipeline from an arbitrary gitlab repo/branch
-        # returns the pipeline's url
+        """(re)-run a pipeline from an arbitrary GitLab repository and branch.
+        Returns:
+            the new pipeline's url
+        """
+
         gl_token = await self.auth.authenticate_installation(self.user)
 
         async with aiohttp.ClientSession() as session:

@@ -147,9 +147,26 @@ class GitHubClient:
             url = f"/repos/{self.repo_owner}/{self.repo_name}/issues/{issue_number}/comments"
             await gh.post(url, data=payload)
 
-    async def react_to_comment(self, comment_id: int, content: str):
-        # Valid content examples: "+1", "-1", "laugh", "hooray", "confused", "heart", "rocket", "eyes"
-        payload = {"content": content}
+    async def react_to_comment(self, comment_id: int, reaction: str):
+        """Add an emoji reaction to a GitHub PR comment.
+        See `valid_reactions` for a list of emoji options.
+        """
+
+        valid_reactions = [
+            "+1",
+            "-1",
+            "laugh",
+            "hooray",
+            "confused",
+            "heart",
+            "rocket",
+            "eyes",
+        ]
+
+        if reaction not in valid_reactions:
+            raise ValueError(f"{reaction} is not a valid reaction")
+
+        payload = {"content": reaction}
 
         gh_token = await self.auth.authenticate_installation(
             self.repo_owner, self.repo_name
