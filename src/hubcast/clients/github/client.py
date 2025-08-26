@@ -78,6 +78,7 @@ class GitHubClient:
             gh = gh_aiohttp.GitHubAPI(session, self.requester, oauth_token=gh_token)
 
             # get the contents of the repository hubcast.yml file
+            # the forge is github so the config will be under .github
             url = f"/repos/{self.repo_owner}/{self.repo_name}/contents/.github/hubcast.yml"
             # get raw contents rather than base64 encoded text
             config_str = await gh.getitem(url, accept="application/vnd.github.raw")
