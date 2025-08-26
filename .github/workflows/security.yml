@@ -1,9 +1,9 @@
 name: Security Checks
 on:
-  # This Workflow can be triggered manually
-  workflow_dispatch:
   workflow_call:
 
+permissions:
+  contents: read
 
 jobs:
   security:
