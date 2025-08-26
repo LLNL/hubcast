@@ -2,9 +2,12 @@ name: Security Checks
 on:
   workflow_call:
 
+
 jobs:
   bandit-scan:
     runs-on: ubuntu-latest
+    permissions:
+      contents: read
     steps:
       - uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683
 
@@ -41,6 +44,9 @@ jobs:
     #   - https://gh.io/using-larger-runners (GitHub.com only)
     # Consider using larger runners or machines with greater resources for possible analysis time improvements.
     runs-on: ${{ (matrix.language == 'swift' && 'macos-latest') || 'ubuntu-latest' }}
+    permissions:
+      contents: read
+      security-events: write
 
     strategy:
       fail-fast: false
