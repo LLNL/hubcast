@@ -1,5 +1,3 @@
-permissions:
-  contents: read
 name: ci
 on:
   push:
@@ -8,6 +6,9 @@ on:
   pull_request:
     branches:
       - main
+
+permissions:
+  contents: read
 
 concurrency:
   group: ci-${{github.ref}}-${{github.event.pull_request.number || github.run_number}}
