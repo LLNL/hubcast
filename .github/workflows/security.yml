@@ -25,12 +25,12 @@ jobs:
 
       - name: Run Bandit
         run: |
-          # bandit should not exit before the results are uploaded to github
-          bandit -r src -f sarif -o results.sarif || true
+          bandit -r src -f sarif -o results.sarif
 
       # upload security results to github; a bot will add inline comments to the PR if any issues are found
       # https://docs.github.com/en/code-security/code-scanning/integrating-with-code-scanning/uploading-a-sarif-file-to-github
       - name: Upload SARIF file
+        if: always()
         uses: github/codeql-action/upload-sarif@v3
         with:
           sarif_file: results.sarif
