@@ -1,10 +1,9 @@
 import logging
-import sys
-import traceback
 
 from aiohttp import web
 from aiojobs.aiohttp import spawn
 from gidgetlab import sansio
+from gidgetlab.exceptions import ValidationFailure
 
 from hubcast.clients.github import GitHubClientFactory
 
@@ -19,14 +18,13 @@ class GitLabHandler:
         self.github_client_factory = github_client_factory
 
     async def handle(self, request):
-        pass
         try:
             # read the GitLab webhook payload
             body = await request.read()
             event = sansio.Event.from_http(
                 request.headers, body, secret=self.webhook_secret
             )
-            log.info(f"GL delivery ID: {event.event}")
+            log.info("GitLab webhook received", extra={"event_type": event.event})
 
             # get coorisponding GitHub repo owner and name from event
             # request variables
@@ -46,7 +44,12 @@ class GitLabHandler:
 
             # return a "Success"
             return web.Response(status=200)
+        except ValidationFailure:
+            log.exception(
+                "Failed to validate Gitlab webhook request",
+            )
+            return web.Response(status=500)
 
         except Exception:
-            traceback.print_exc(file=sys.stderr)
+            log.exception("Failed to handle GitLab webhook")
             return web.Response(status=500)

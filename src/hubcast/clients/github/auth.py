@@ -7,7 +7,7 @@ from gidgethub import aiohttp as gh_aiohttp
 
 # location for authenticated app to get a token for one of its installations
 # bandit thinks this is a hardcoded password, we ignore security checks on this line
-INSTALLATION_TOKEN_URL = "app/installations/{installation_id}/access_tokens"  # nosec B105
+INSTALLATION_TOKEN_URL = "/app/installations/{installation_id}/access_tokens"  # nosec B105
 
 
 class TokenCache:
@@ -89,6 +89,7 @@ class GitHubAuthenticator:
         Renew the JWT if necessary, then use it to get an installation access
         token from github, if necessary.
         """
+
         installation_id = await self.get_installation_id(owner, repo)
 
         async def renew_installation_token():

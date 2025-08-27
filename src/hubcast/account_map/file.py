@@ -5,6 +5,10 @@ import yaml
 from .abc import AccountMap
 
 
+class FileMapError(Exception):
+    pass
+
+
 class FileMap(AccountMap):
     """
     A simple user map importing from a YAML file of the form.
@@ -29,12 +33,14 @@ class FileMap(AccountMap):
         """
         self.path = path
 
-        with open(path, "r") as f:
-            try:
+        try:
+            with open(path, "r") as f:
                 data = yaml.safe_load(f)
                 self.users = data["Users"]
-            except yaml.YAMLError as exc:
-                print(exc)
+        except FileNotFoundError:
+            raise FileMapError(f"File map not found. path={path}")
+        except yaml.YAMLError:
+            raise FileMapError(f"Failed to parse file map. path={path}")
 
     def __call__(self, github_user: str) -> Union[str, None]:
         """

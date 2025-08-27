@@ -26,17 +26,16 @@ class GitHubHandler:
                 request.headers, body, secret=self.webhook_secret
             )
 
-            log.info(f"GH delivery ID: {event.delivery_id}")
+            log.info(
+                "GitHub webhook received",
+                extra={"event_type": event.event, "delivery_id": event.delivery_id},
+            )
 
-            try:
-                github_user = event.data["sender"]["login"]
-                gitlab_user = self.account_map(github_user)
-            except Exception as exc:
-                log.error(exc)
-                return web.Response(status=200)
+            github_user = event.data["sender"]["login"]
+            gitlab_user = self.account_map(github_user)
 
             if gitlab_user is None:
-                log.info(f"Unauthorized GitHub User: {github_user}")
+                log.info("Unauthorized GitHub user", extra={"github_user": github_user})
                 return web.Response(status=200)
 
             gh_repo_owner = event.data["repository"]["owner"]["login"]
@@ -49,6 +48,6 @@ class GitHubHandler:
 
             # return a "Success"
             return web.Response(status=200)
-
         except Exception:
+            log.exception("Failed to handle Github webhook")
             return web.Response(status=500)

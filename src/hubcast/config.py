@@ -12,6 +12,7 @@ class Config:
 
         self.account_map_type = env_get("HC_ACCOUNT_MAP_TYPE")
         self.account_map_path = env_get("HC_ACCOUNT_MAP_PATH")
+        self.logging_config_path = env_get("HC_LOGGING_CONFIG_PATH")
 
         self.gh = GitHubConfig()
         self.gl = GitLabConfig()

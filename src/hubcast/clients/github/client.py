@@ -1,12 +1,8 @@
-import logging
-
 import aiohttp
 import yaml
 from gidgethub import aiohttp as gh_aiohttp
 
 from .auth import GitHubAuthenticator
-
-log = logging.getLogger(__name__)
 
 
 class InvalidConfigYAMLError(Exception):
@@ -84,11 +80,10 @@ class GitHubClient:
 
             try:
                 config = yaml.safe_load(config_str)
-            except yaml.YAMLError as exc:
-                log.error(
-                    f"[{self.repo_owner}/{self.repo_name}]: Unable to parse config: {exc}"
+            except yaml.YAMLError:
+                raise InvalidConfigYAMLError(
+                    f"Failed to parse repo config. repo_owner={self.repo_owner} repo_name={self.repo_name}"
                 )
-                raise InvalidConfigYAMLError()
 
             return config
 
