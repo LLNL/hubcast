@@ -1,4 +1,3 @@
-import logging
 import urllib.parse
 from typing import Dict
 
@@ -6,8 +5,6 @@ import aiohttp
 import gidgetlab.aiohttp
 
 from .auth import GitLabAuthenticator
-
-log = logging.getLogger(__name__)
 
 
 class GitLabClientFactory:
@@ -99,11 +96,6 @@ class GitLabClient:
 
             repo_id = urllib.parse.quote_plus(gl_fullname)
 
-            try:
-                pipeline = await gl.post(
-                    f"/projects/{repo_id}/pipeline?ref={ref}", data={}
-                )
+            pipeline = await gl.post(f"/projects/{repo_id}/pipeline?ref={ref}", data={})
 
-                return pipeline["web_url"]
-            except Exception as e:
-                log.error(f"could not start pipeline: {e}")
+            return pipeline["web_url"]
