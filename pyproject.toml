@@ -45,3 +45,6 @@ pythonpath = [
 [tool.ruff]
 line-length = 88
 exclude = ["spack"]
+
+[tool.bandit]
+exclude_dirs = []
