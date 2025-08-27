@@ -1,4 +1,3 @@
-import logging
 import time
 from typing import Awaitable, Callable, Tuple
 
@@ -9,8 +8,6 @@ from gidgethub import aiohttp as gh_aiohttp
 # location for authenticated app to get a token for one of its installations
 # bandit thinks this is a hardcoded password, we ignore security checks on this line
 INSTALLATION_TOKEN_URL = "/app/installations/{installation_id}/access_tokens"  # nosec B105
-
-log = logging.getLogger(__name__)
 
 
 class TokenCache:
