@@ -276,7 +276,7 @@ async def respond_comment(event, gh, gl, gl_user, *arg, **kwargs):
         # note: the user will see a +1 regardless of whether a sync truly occurred
         plus_one = True
 
-    elif re.search(f"@{gh.bot_user} run pipeline", comment, re.IGNORECASE):
+    elif re.search(f"@{gh.bot_user} (re[-]?)?(run|start) pipeline", comment, re.IGNORECASE):
         pull_request_id = event.data["issue"]["number"]
         pull_request = await gh.get_pr(pull_request_id)
         # sync the PR in case it fell out of sync
