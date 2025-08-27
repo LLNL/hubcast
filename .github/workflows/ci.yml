@@ -21,6 +21,7 @@ jobs:
       pull-requests: read
     outputs:
       style: ${{ steps.filter.outputs.style }}
+      security: ${{ steps.filter.outputs.security }}
       unit-tests: ${{ steps.filter.outputs.unit-tests }}
     steps:
       - uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683 # @v2
@@ -37,6 +38,11 @@ jobs:
               - '.github/**/*'
               - 'src/**/*'
               - 'pyproject.toml'
+            security:
+              - '.github/**/*'
+              - 'src/**/*'
+              - 'pyproject.toml'
+              - '.bandit'
            # unit-tests:
            #   - '.github/**/*'
            #   - 'src/**/*'
@@ -47,6 +53,14 @@ jobs:
     if: ${{ needs.changes.outputs.style == 'true' }}
     needs: changes
     uses: ./.github/workflows/style.yml
+
+  security:
+    if: ${{ needs.changes.outputs.security == 'true' }}
+    needs: [changes, style]
+    uses: ./.github/workflows/security.yml
+    permissions:
+      contents: read
+      security-events: write
 
   # unit-tests:
   #   if: ${{ needs.changes.outputs.unit-tests == 'true' }}
@@ -62,6 +76,7 @@ jobs:
     needs:
      - changes
      - style
+     - security
      # - unit-tests
      # - coverage
     if: always()
