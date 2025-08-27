@@ -17,8 +17,6 @@ concurrency:
 jobs:
   changes:
     runs-on: ubuntu-latest
-    permissions:
-      pull-requests: read
     outputs:
       style: ${{ steps.filter.outputs.style }}
       security: ${{ steps.filter.outputs.security }}
@@ -84,7 +82,7 @@ jobs:
     steps:
     - name: Status summary
       run: |
-        if [[ "${{ contains(needs.*.result, 'failure') || contains(needs.*.result, 'cancelled') }}" == "true" ]]; then
+        if ${{ contains(needs.*.result, 'failure') || contains(needs.*.result, 'cancelled') }}; then
           echo "One or more required jobs failed or were cancelled"
           exit 1
         else

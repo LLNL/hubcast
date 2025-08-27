@@ -8,6 +8,8 @@ spack:
   specs:
   - py-pip
   - py-hubcast
+  - py-bandit
+  - py-ruff
   - smee-client
   - typos
   view: true
