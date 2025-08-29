@@ -306,6 +306,44 @@ async def respond_comment(event, gh, gl, gl_user, *arg, **kwargs):
         else:
             response = "I had a problem starting the pipeline."
 
+    elif re.search(
+        f"@{gh.bot_user} restart failed(?:[- ]?jobs)?", comment, re.IGNORECASE
+    ):
+        pull_request_id = event.data["issue"]["number"]
+        pull_request = await gh.get_pr(pull_request_id)
+        # if a pipeline failed, we give the user the option to restart any failed jobs
+        # we don't want to re-sync the branch, as a new pipeline would be created
+        # and would defeat the purpose of individually restarting failed jobs
+
+        # get the branch this PR belongs to
+        src_fullname = pull_request["head"]["repo"]["full_name"]
+        # pull requests coming from forks are pushed as branches in the form of
+        # pr-<pr-number> instead of as their branch name as conflicts could occur
+        # between multiple repositories
+        is_pull_request_fork = src_fullname != pull_request["base"]["repo"]["full_name"]
+        if is_pull_request_fork:
+            branch = f"pr-{pull_request_id}"
+        else:
+            branch = pull_request["head"]["ref"]
+
+        # get the gitlab repo information and run the pipeline
+        repo_config = await get_repo_config(gh, src_fullname, refresh=True)
+        dest_fullname = f"{repo_config.dest_org}/{repo_config.dest_name}"
+        pipeline_id = await gl.get_latest_pipeline(dest_fullname, branch)
+
+        if pipeline_id:
+            pipeline_url = await gl.retry_pipeline_jobs(dest_fullname, pipeline_id)
+
+            if pipeline_url:
+                response = (
+                    f"I've retried any failed jobs in the [pipeline]({pipeline_url})!"
+                )
+                plus_one = True
+            else:
+                response = "I had a problem retrying jobs in the pipeline."
+        else:
+            response = "No pipeline exists."
+
     if response:
         await gh.post_comment(event.data["issue"]["number"], response)
 
