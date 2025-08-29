@@ -80,3 +80,65 @@ class GitLabClient:
             if changed:
                 url = f"/projects/{repo_id}/hooks/{existing_hook['id']}"
                 await gl.put(url, data=new_hook)
+
+    async def get_latest_pipeline(self, gl_fullname: str, ref: str) -> int:
+        """gets the latest pipeline for an arbitrary GitLab repository and branch.
+        Returns:
+            the pipeline's id
+        """
+
+        gl_token = await self.auth.authenticate_installation(self.user)
+
+        async with aiohttp.ClientSession() as session:
+            gl = gidgetlab.aiohttp.GitLabAPI(
+                session, self.user, access_token=gl_token, url=self.instance_url
+            )
+
+            repo_id = urllib.parse.quote_plus(gl_fullname)
+
+            pipeline = await gl.getitem(
+                f"/projects/{repo_id}/pipelines/latest?ref={ref}"
+            )
+
+            return pipeline.get("id")
+
+    async def run_pipeline(self, gl_fullname: str, ref: str) -> str:
+        """(re)-run a pipeline from an arbitrary GitLab repository and branch.
+        Returns:
+            the new pipeline's url
+        """
+
+        gl_token = await self.auth.authenticate_installation(self.user)
+
+        async with aiohttp.ClientSession() as session:
+            gl = gidgetlab.aiohttp.GitLabAPI(
+                session, self.user, access_token=gl_token, url=self.instance_url
+            )
+
+            repo_id = urllib.parse.quote_plus(gl_fullname)
+
+            pipeline = await gl.post(f"/projects/{repo_id}/pipeline?ref={ref}", data={})
+
+            return pipeline.get("web_url")
+
+    async def retry_pipeline_jobs(self, gl_fullname: str, pipeline_id: int) -> str:
+        """retries any failed jobs in a pipeline. if there are no jobs that meet this criteria,
+        calling this has no effect
+        Returns:
+            the pipeline's url
+        """
+
+        gl_token = await self.auth.authenticate_installation(self.user)
+
+        async with aiohttp.ClientSession() as session:
+            gl = gidgetlab.aiohttp.GitLabAPI(
+                session, self.user, access_token=gl_token, url=self.instance_url
+            )
+
+            repo_id = urllib.parse.quote_plus(gl_fullname)
+
+            pipeline = await gl.post(
+                f"/projects/{repo_id}/pipelines/{pipeline_id}/retry", data={}
+            )
+
+            return pipeline.get("web_url")
