@@ -6,6 +6,17 @@ from gidgethub import aiohttp as gh_aiohttp
 
 from .auth import GitHubAuthenticator
 
+VALID_GH_REACTIONS = [
+    "+1",
+    "-1",
+    "laugh",
+    "hooray",
+    "confused",
+    "heart",
+    "rocket",
+    "eyes",
+]
+
 
 class InvalidConfigYAMLError(Exception):
     pass
@@ -149,21 +160,10 @@ class GitHubClient:
 
     async def react_to_comment(self, comment_id: int, reaction: str):
         """Add an emoji reaction to a GitHub PR comment.
-        See `valid_reactions` for a list of emoji options.
+        See `VALID_GH_REACTIONS` for a list of emoji options.
         """
 
-        valid_reactions = [
-            "+1",
-            "-1",
-            "laugh",
-            "hooray",
-            "confused",
-            "heart",
-            "rocket",
-            "eyes",
-        ]
-
-        if reaction not in valid_reactions:
+        if reaction not in VALID_GH_REACTIONS:
             raise ValueError(f"{reaction} is not a valid reaction")
 
         payload = {"content": reaction}
