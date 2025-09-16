@@ -1,8 +1,21 @@
+from urllib.parse import urlparse
+
 import aiohttp
 import yaml
 from gidgethub import aiohttp as gh_aiohttp
 
 from .auth import GitHubAuthenticator
+
+VALID_GH_REACTIONS = [
+    "+1",
+    "-1",
+    "laugh",
+    "hooray",
+    "confused",
+    "heart",
+    "rocket",
+    "eyes",
+]
 
 
 class InvalidConfigYAMLError(Exception):
@@ -10,26 +23,40 @@ class InvalidConfigYAMLError(Exception):
 
 
 class GitHubClientFactory:
-    def __init__(self, app_id, privkey, requester):
+    def __init__(self, app_id, privkey, requester, bot_user):
         self.requester = requester
         self.auth = GitHubAuthenticator(requester, privkey, app_id)
+        self.bot_user = bot_user
 
     def create_client(self, repo_owner, repo_name):
-        return GitHubClient(self.auth, self.requester, repo_owner, repo_name)
+        return GitHubClient(
+            self.auth, self.requester, repo_owner, repo_name, self.bot_user
+        )
 
 
 class GitHubClient:
-    def __init__(self, auth, requester, repo_owner, repo_name):
+    def __init__(self, auth, requester, repo_owner, repo_name, bot_user):
         self.auth = auth
         self.requester = requester
         self.repo_owner = repo_owner
         self.repo_name = repo_name
+        self.bot_user = bot_user
 
     async def set_check_status(
         self, ref: str, check_name: str, status: str, details_url: str
     ):
+        gitlab_netloc = urlparse(details_url).netloc
+
         # construct upload payload
-        payload = {"name": check_name, "head_sha": ref, "details_url": details_url}
+        payload = {
+            "name": check_name,
+            "head_sha": ref,
+            "details_url": details_url,
+            "output": {
+                "title": "External Pipeline Run",
+                "summary": f"[View this pipeline on {gitlab_netloc}]({details_url})",
+            },
+        }
 
         # for success and failure status write out a conclusion
         if status in ("success", "failure", "cancelled"):
@@ -87,6 +114,18 @@ class GitHubClient:
 
             return config
 
+    async def get_pr(self, id):
+        """Return individual PR data."""
+        gh_token = await self.auth.authenticate_installation(
+            self.repo_owner, self.repo_name
+        )
+
+        async with aiohttp.ClientSession() as session:
+            gh = gh_aiohttp.GitHubAPI(session, self.requester, oauth_token=gh_token)
+
+            url = f"/repos/{self.repo_owner}/{self.repo_name}/pulls/{id}"
+            return await gh.getitem(url)
+
     async def get_prs(self, branch=None):
         """Returns a list of all open PR numbers; can be filtered by internal branches."""
 
@@ -105,3 +144,49 @@ class GitHubClient:
                 url = f"{url}?head={self.repo_owner}:{branch}"
                 prs_res = await gh.getitem(url)
                 return [pr["number"] for pr in prs_res]
+
+    async def post_comment(self, issue_number: int, body: str):
+        payload = {"body": body}
+
+        gh_token = await self.auth.authenticate_installation(
+            self.repo_owner, self.repo_name
+        )
+
+        async with aiohttp.ClientSession() as session:
+            gh = gh_aiohttp.GitHubAPI(session, self.requester, oauth_token=gh_token)
+
+            url = f"/repos/{self.repo_owner}/{self.repo_name}/issues/{issue_number}/comments"
+            await gh.post(url, data=payload)
+
+    async def react_to_comment(self, comment_id: int, reaction: str):
+        """Add an emoji reaction to a GitHub PR comment.
+        See `VALID_GH_REACTIONS` for a list of emoji options.
+        """
+
+        if reaction not in VALID_GH_REACTIONS:
+            raise ValueError(f"{reaction} is not a valid reaction")
+
+        payload = {"content": reaction}
+
+        gh_token = await self.auth.authenticate_installation(
+            self.repo_owner, self.repo_name
+        )
+
+        async with aiohttp.ClientSession() as session:
+            gh = gh_aiohttp.GitHubAPI(session, self.requester, oauth_token=gh_token)
+
+            url = f"/repos/{self.repo_owner}/{self.repo_name}/issues/comments/{comment_id}/reactions"
+            await gh.post(url, data=payload)
+
+    async def get_branch(self, name: str):
+        """Return individual branch data."""
+
+        gh_token = await self.auth.authenticate_installation(
+            self.repo_owner, self.repo_name
+        )
+
+        async with aiohttp.ClientSession() as session:
+            gh = gh_aiohttp.GitHubAPI(session, self.requester, oauth_token=gh_token)
+
+            url = f"/repos/{self.repo_owner}/{self.repo_name}/branches/{name}"
+            return await gh.getitem(url)
