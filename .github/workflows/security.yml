@@ -30,7 +30,7 @@ jobs:
       # the PR if any issues are found
       - name: Upload SARIF file
         if: always()
-        uses: github/codeql-action/upload-sarif@3c3833e0f8c1c83d449a7478aa59c036a9165498
+        uses: github/codeql-action/upload-sarif@3599b3baa15b485a2e49ef411a7a4bb2452e7f93
         with:
           sarif_file: results.sarif
           category: bandit
@@ -46,12 +46,12 @@ jobs:
       uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683
 
     - name: Initialize CodeQL
-      uses: github/codeql-action/init@3c3833e0f8c1c83d449a7478aa59c036a9165498
+      uses: github/codeql-action/init@3599b3baa15b485a2e49ef411a7a4bb2452e7f93
       with:
         languages: ${{ matrix.language }}
         build-mode: none
 
     - name: Perform CodeQL Analysis
-      uses: github/codeql-action/analyze@3c3833e0f8c1c83d449a7478aa59c036a9165498
+      uses: github/codeql-action/analyze@3599b3baa15b485a2e49ef411a7a4bb2452e7f93
       with:
         category: "/language:${{matrix.language}}"
