@@ -1,7 +1,7 @@
 aiohttp==3.13.2
 build==1.2.2.post1
 cachetools==6.2.1
-coverage==7.10.7
+coverage==7.11.1
 gidgethub==5.4.0
 gidgetlab==2.1.0
 hatchling==1.27.0
