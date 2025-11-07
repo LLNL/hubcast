@@ -1,4 +1,4 @@
-aiohttp==3.12.15
+aiohttp==3.13.2
 build==1.2.2.post1
 cachetools==6.2.1
 coverage==7.10.7
