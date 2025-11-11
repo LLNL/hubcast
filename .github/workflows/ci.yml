@@ -42,16 +42,16 @@ jobs:
               - 'src/**/*'
               - 'pyproject.toml'
               - '.bandit'
-           # unit-tests:
-           #   - '.github/**/*'
-           #   - 'src/**/*'
-           #   - 'tests/**/*'
-           #   - 'pyproject.toml'
             container:
               - '.github/**/*'
               - 'src/**/*'
               - 'pyproject.toml'
               - 'Dockerfile'
+           # unit-tests:
+           #   - '.github/**/*'
+           #   - 'src/**/*'
+           #   - 'tests/**/*'
+           #   - 'pyproject.toml'
 
   style:
     if: ${{ needs.changes.outputs.style == 'true' }}
