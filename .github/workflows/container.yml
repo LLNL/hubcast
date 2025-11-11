@@ -2,6 +2,9 @@ name: Container Build & Publish
 on:
   workflow_call:
 
+permissions:
+  contents: read
+
 jobs:
   build-release:
     runs-on: ubuntu-latest
