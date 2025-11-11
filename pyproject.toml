@@ -12,6 +12,7 @@ dependencies = [
     "gidgetlab",
     "repligit[aiohttp]",
     "pyyaml",
+    "aiojobs",
 ]
 authors = [
     { name = "Alec Scott" },
