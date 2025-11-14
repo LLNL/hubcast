@@ -1,51 +1,15 @@
 import time
-from typing import Awaitable, Callable, Tuple
+from typing import Tuple
 
 import aiohttp
 import gidgethub.apps as gha
 from gidgethub import aiohttp as gh_aiohttp
 
+from hubcast.clients.utils import TokenCache
+
 # location for authenticated app to get a token for one of its installations
 # bandit thinks this is a hardcoded password, we ignore security checks on this line
 INSTALLATION_TOKEN_URL = "/app/installations/{installation_id}/access_tokens"  # nosec B105
-
-
-class TokenCache:
-    """
-    Cache for web tokens with an expiration.
-    """
-
-    def __init__(self) -> None:
-        self._tokens = {}
-
-    async def get_token(
-        self,
-        name: str,
-        renew: Callable[[], Awaitable[Tuple[float, str]]],
-        time_needed: int = 60,
-    ) -> str:
-        """
-        Get a cached token, or renew as needed.
-
-        Parameters
-        ---------
-        name: str
-            An identifying name of a token to get from the cache.
-        renew: Callable[None]
-            A function to call in order to generate a new token if the cache
-            is stale.
-        time_needed: int
-            The length of time a token will be needed. Thus any token that
-            expires during this window should be disregarded and renewed.
-        """
-        expires, token = self._tokens.get(name, (0, ""))
-
-        now = time.time()
-        if expires < now + time_needed:
-            expires, token = await renew()
-            self._tokens[name] = (expires, token)
-
-        return token
 
 
 class GitHubAuthenticator:
@@ -111,7 +75,7 @@ class GitHubAuthenticator:
                 token = result["token"]
                 return (expires, token)
 
-        return await self._tokens.get_token(installation_id, renew_installation_token)
+        return await self._tokens.get(installation_id, renew_installation_token)
 
     def parse_isotime(self, timestr: str) -> int:
         """Convert UTC ISO 8601 time stamp to seconds in epoch"""
@@ -132,4 +96,4 @@ class GitHubAuthenticator:
             # gidgethub JWT's expire after 10 minutes (you cannot change it)
             return (now + 10 * 60), jwt
 
-        return await self._tokens.get_token("JWT", renew_jwt)
+        return await self._tokens.get("JWT", renew_jwt)
