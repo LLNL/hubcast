@@ -1,24 +1,25 @@
 from datetime import datetime, timedelta, timezone
+from typing import Tuple
 
 import aiohttp
 import gidgetlab.aiohttp
 
 from hubcast.clients.utils import TokenCache
 
-TOKEN_NAME = "hubcast-impersonation"
+TOKEN_NAME = "hubcast-impersonation"  # nosec B105
 # api scope needed for reading pipelines, setting webhooks
 # read_repository and write_repository needed for repo access
-GL_SCOPES = ["api", "read_repository", "write_repository"]
+GL_SCOPES = ("api", "read_repository", "write_repository")
 
 
 class GitLabAuthenticator:
     """
-    An authenticator and token handler for Gitlab.
+    An authenticator and token handler for GitLab.
 
     Attributes:
     ----------
     instance_url: str
-        URL of the Gitlab instance.
+        URL of the GitLab instance.
     requester: str
         A string identifying who is responsible for the requests.
     admin_token: str
@@ -36,10 +37,10 @@ class GitLabAuthenticator:
         username: str,
         scopes: list = GL_SCOPES,
         expire_days: int = 1,
-    ):
+    ) -> str:
         """
-        returns an impersonation token for a user with specified scopes; maintains a cache of previously created tokens.
-        gitlab does not allow granular expiration times for tokens, so we set expiration in days (defaulting to 1)
+        Returns an impersonation token for a user with specified scopes; maintains a cache of previously created tokens.
+        GitLab does not allow granular expiration times for tokens, so we set expiration in days (defaulting to 1)
 
         Parameters:
         ----------
@@ -86,7 +87,7 @@ class GitLabAuthenticator:
         )
 
     async def _get_user_id(self, username: str) -> int:
-        """retrieve the user ID for a given username from the gitlab instance"""
+        """Retrieve the user ID for a given username from the GitLab instance."""
         async with aiohttp.ClientSession() as session:
             gl = gidgetlab.aiohttp.GitLabAPI(
                 session,
@@ -97,12 +98,12 @@ class GitLabAuthenticator:
 
             res = await gl.getitem(f"/users?username={username}")
             if not res:
-                raise ValueError(f"user '{username}' not found on gitlab instance.")
+                raise ValueError(f"user '{username}' not found on GitLab instance.")
             return res[0]["id"]
 
     @staticmethod
-    def _date_after_days(days: int) -> str:
-        """returns UTC date string in YYYY-MM-DD format and midnight UTC timestamp"""
+    def _date_after_days(days: int) -> Tuple[str, int]:
+        """Returns UTC date string in YYYY-MM-DD format and midnight UTC timestamp."""
         dt = (datetime.now(timezone.utc) + timedelta(days=days)).replace(
             hour=0, minute=0, second=0, microsecond=0
         )

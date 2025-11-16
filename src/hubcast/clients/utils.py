@@ -23,7 +23,7 @@ class TokenCache:
         ---------
         name: str
             An identifying name of a token to get from the cache.
-        renew: Callable[None]
+        renew: Callable[[], Awaitable[Tuple[float, str]]]
             A function to call in order to generate a new token if the cache
             is stale.
         time_needed: int
