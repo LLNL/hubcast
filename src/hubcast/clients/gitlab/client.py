@@ -8,26 +8,40 @@ from .auth import GitLabAuthenticator
 
 
 class GitLabClientFactory:
-    def __init__(self, instance_url, access_token, callback_url, webhook_secret):
-        self.auth = GitLabAuthenticator(instance_url, access_token)
+    def __init__(
+        self,
+        instance_url: str,
+        requester: str,
+        admin_token: str,
+        callback_url: str,
+        webhook_secret: str,
+    ):
+        self.requester = requester
+        self.auth = GitLabAuthenticator(instance_url, requester, admin_token)
         self.instance_url = instance_url
         self.callback_url = callback_url
         self.webhook_secret = webhook_secret
 
-    def create_client(self, gitlab_user):
-        # TODO: rewrite to support impersonation tokens
-        # by downscoping auth token for user
+    def create_client(self, user: str):
+        """creates a GitLabClient for a specific user"""
         return GitLabClient(
             self.auth,
             self.instance_url,
             self.callback_url,
             self.webhook_secret,
-            gitlab_user,
+            user,
         )
 
 
 class GitLabClient:
-    def __init__(self, auth, instance_url, callback_url, webhook_secret, user):
+    def __init__(
+        self,
+        auth: GitLabAuthenticator,
+        instance_url: str,
+        callback_url: str,
+        webhook_secret: str,
+        user: str,
+    ):
         self.auth = auth
         self.instance_url = instance_url
         self.callback_url = callback_url
@@ -35,7 +49,7 @@ class GitLabClient:
         self.user = user
 
     async def set_webhook(self, gl_fullname: str, data: Dict):
-        gl_token = await self.auth.authenticate_installation(self.user)
+        gl_token = await self.auth.authenticate_user(username=self.user)
 
         new_hook = {
             "token": self.webhook_secret,
@@ -49,7 +63,10 @@ class GitLabClient:
 
         async with aiohttp.ClientSession() as session:
             gl = gidgetlab.aiohttp.GitLabAPI(
-                session, self.user, access_token=gl_token, url=self.instance_url
+                session,
+                requester=self.user,
+                access_token=gl_token,
+                url=self.instance_url,
             )
 
             existing_hook = None
@@ -87,11 +104,14 @@ class GitLabClient:
             the pipeline's id
         """
 
-        gl_token = await self.auth.authenticate_installation(self.user)
+        gl_token = await self.auth.authenticate_user(self.user)
 
         async with aiohttp.ClientSession() as session:
             gl = gidgetlab.aiohttp.GitLabAPI(
-                session, self.user, access_token=gl_token, url=self.instance_url
+                session,
+                requester=self.user,
+                access_token=gl_token,
+                url=self.instance_url,
             )
 
             repo_id = urllib.parse.quote_plus(gl_fullname)
@@ -108,11 +128,14 @@ class GitLabClient:
             the new pipeline's url
         """
 
-        gl_token = await self.auth.authenticate_installation(self.user)
+        gl_token = await self.auth.authenticate_user(self.user)
 
         async with aiohttp.ClientSession() as session:
             gl = gidgetlab.aiohttp.GitLabAPI(
-                session, self.user, access_token=gl_token, url=self.instance_url
+                session,
+                requester=self.user,
+                access_token=gl_token,
+                url=self.instance_url,
             )
 
             repo_id = urllib.parse.quote_plus(gl_fullname)
@@ -128,11 +151,14 @@ class GitLabClient:
             the pipeline's url
         """
 
-        gl_token = await self.auth.authenticate_installation(self.user)
+        gl_token = await self.auth.authenticate_user(self.user)
 
         async with aiohttp.ClientSession() as session:
             gl = gidgetlab.aiohttp.GitLabAPI(
-                session, self.user, access_token=gl_token, url=self.instance_url
+                session,
+                requester=self.user,
+                access_token=gl_token,
+                url=self.instance_url,
             )
 
             repo_id = urllib.parse.quote_plus(gl_fullname)

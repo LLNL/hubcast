@@ -83,7 +83,7 @@ async def sync_branch(event, gh, gl, gl_user, *arg, **kwargs):
         have_shas,
     )
 
-    gl_token = await gl.auth.authenticate_installation(gl_user)
+    gl_token = await gl.auth.authenticate_user(gl_user)
 
     log.info(
         "Mirroring refs",
@@ -118,7 +118,7 @@ async def remove_branch(event, gh, gl, gl_user, *arg, **kwargs):
     head_sha = gl_refs.get(target_ref)
     null_sha = "0" * 40
 
-    gl_token = await gl.auth.authenticate_installation(gl_user)
+    gl_token = await gl.auth.authenticate_user(gl_user)
 
     log.info("Deleting ref", extra={"repo": src_fullname, "target_ref": target_ref})
     await send_pack(
@@ -181,7 +181,7 @@ async def sync_pr(pull_request, gh, gl, gl_user):
         have_shas,
     )
 
-    gl_token = await gl.auth.authenticate_installation(gl_user)
+    gl_token = await gl.auth.authenticate_user(gl_user)
 
     # upload packfile to gitlab repository
     log.info(
@@ -239,7 +239,7 @@ async def remove_pr(event, gh, gl, gl_user, *arg, **kwargs):
     head_sha = gl_refs.get(target_ref)
     null_sha = "0" * 40
 
-    gl_token = await gl.auth.authenticate_installation(gl_user)
+    gl_token = await gl.auth.authenticate_user(gl_user)
 
     log.info("Deleting ref", extra={"repo": src_fullname, "target_ref": target_ref})
     await send_pack(
