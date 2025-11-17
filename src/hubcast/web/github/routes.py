@@ -160,6 +160,10 @@ async def sync_pr(pull_request, gh, gl, gl_user):
     # get the repository configuration from .github/hubcast.yml
     repo_config = await get_repo_config(gh, src_fullname)
 
+    if not repo_config.sync_drafts and pull_request["draft"]:
+        # TODO comment on the PR that drafts are not being synced once bot functionality PR is merged
+        return
+
     dest_fullname = f"{repo_config.dest_org}/{repo_config.dest_name}"
     dest_remote_url = f"{gl.instance_url}/{dest_fullname}.git"
 
