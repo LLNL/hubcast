@@ -8,6 +8,7 @@ class RepoConfig:
         check_type: str = "pipeline",
         create_mr: bool = False,
         delete_closed: bool = True,
+        sync_drafts: bool = True,
     ):
         self.fullname = fullname
         self.dest_org = dest_org
@@ -16,3 +17,4 @@ class RepoConfig:
         self.check_type = check_type
         self.create_mr = create_mr
         self.delete_closed = delete_closed
+        self.sync_drafts = sync_drafts
