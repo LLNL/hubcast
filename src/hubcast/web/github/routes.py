@@ -170,6 +170,18 @@ async def sync_pr(pull_request, gh, gl, gl_user, src_repo_private):
     else:
         target_ref = f"refs/heads/{pull_request['head']['ref']}"
 
+    if is_pull_request_fork and src_repo_private:
+        # we cannot use our gitlab token to access a private fork
+        log.warning(
+            "Cannot sync pull request from private fork",
+            extra={
+                "repo": src_fullname,
+                "pull_request_id": pull_request_id,
+                "fork_fullname": pull_request["head"]["repo"]["full_name"],
+            },
+        )
+        return
+
     # get the repository configuration from .github/hubcast.yml
     repo_config = await get_repo_config(gh, src_fullname)
 
@@ -233,7 +245,7 @@ async def sync_pr(pull_request, gh, gl, gl_user, src_repo_private):
 async def sync_pr_event(event, gh, gl, gl_user, *arg, **kwargs):
     """Sync the git fork/branch referenced in a PR to GitLab."""
     pull_request = event.data["pull_request"]
-    src_repo_private = event.data["repository"]["private"]
+    src_repo_private = pull_request["head"]["repo"]["private"]
     await sync_pr(pull_request, gh, gl, gl_user, src_repo_private)
 
 
@@ -296,8 +308,8 @@ async def respond_comment(event, gh, gl, gl_user, *arg, **kwargs):
         # syncs PR changes to the destination on behalf of the commenter
         # this does not handle PR deletions, those will need to be manually cleaned by project maintainers
         pull_request_id = event.data["issue"]["number"]
-        src_repo_private = event.data["repository"]["private"]
         pull_request = await gh.get_pr(pull_request_id)
+        src_repo_private = pull_request["head"]["repo"]["private"]
         await sync_pr(pull_request, gh, gl, gl_user, src_repo_private)
 
         # note: the user will see a +1 regardless of whether a sync truly occurred
@@ -307,8 +319,8 @@ async def respond_comment(event, gh, gl, gl_user, *arg, **kwargs):
         f"@{gh.bot_user} (re[-]?)?(run|start) pipeline", comment, re.IGNORECASE
     ):
         pull_request_id = event.data["issue"]["number"]
-        src_repo_private = event.data["repository"]["private"]
         pull_request = await gh.get_pr(pull_request_id)
+        src_repo_private = pull_request["head"]["repo"]["private"]
         # sync the PR in case it fell out of sync
         await sync_pr(pull_request, gh, gl, gl_user, src_repo_private)
 
