@@ -63,14 +63,21 @@ async def sync_branch(event, gl_src, gl_dest, dest_user, *args, **kwargs):
 
     src_repo_url = event.data["repository"]["git_http_url"]
     src_fullname = event.data["project"]["path_with_namespace"]
+    private_src_repo = event.data["project"]["visibility_level"] != 20
     repo_id = event.data["project_id"]
     # after represents the new HEAD of the ref
     want_sha = event.data["after"]
     target_ref = event.data["ref"]
 
+    src_creds = {}
+    if private_src_repo:
+        src_creds = {
+            "username": gl_src.requester,
+            "password": await gl_src.auth.authenticate_installation(gl_src.requester),
+        }
+
     # skip branches from push events that are also merge requests
-    # TODO this needs the src creds if necessary
-    src_refs = await ls_remote(src_repo_url)
+    src_refs = await ls_remote(src_repo_url, **src_creds)
     pull_refs = [
         src_refs[ref] for ref in src_refs if ref.startswith("refs/merge-requests/")
     ]
@@ -101,7 +108,7 @@ async def sync_branch(event, gl_src, gl_dest, dest_user, *args, **kwargs):
         log.info(f"[{src_fullname}]: {target_ref} already up-to-date")
         return
 
-    packfile = await fetch_pack(src_repo_url, want_sha, have_shas)
+    packfile = await fetch_pack(src_repo_url, want_sha, have_shas, **src_creds)
 
     log.info(f"[{src_fullname}]: mirroring {from_sha} -> {want_sha}")
     await send_pack(
@@ -159,6 +166,17 @@ async def sync_mr(event, gl_src, gl_dest, dest_user, *args, **kwawrgs):
     src_repo_url = event.data["object_attributes"]["source"]["git_http_url"]
     src_fullname = event.data["object_attributes"]["source"]["path_with_namespace"]
     want_sha = event.data["object_attributes"]["last_commit"]["id"]
+    # https://docs.gitlab.com/development/permissions/predefined_roles/#general-permissions
+    private_src_repo = (
+        event.data["object_attributes"]["source"]["visibility_level"] != 20
+    )
+
+    src_creds = {}
+    if private_src_repo:
+        src_creds = {
+            "username": gl_src.requester,
+            "password": await gl_src.auth.authenticate_installation(gl_src.requester),
+        }
 
     # merge requests coming from forks are pushed as branches in the form of
     # mr-<mr-number> instead of as their branch name as conflicts could occur
@@ -171,6 +189,20 @@ async def sync_mr(event, gl_src, gl_dest, dest_user, *args, **kwawrgs):
         target_ref = f"refs/heads/mr-{merge_request_id}"
     else:
         target_ref = f"refs/heads/{event.data['object_attributes']['source_branch']}"
+
+    if is_from_fork and private_src_repo:
+        # we can't access private forks
+        log.warning(
+            "cannot sync merge request from private fork",
+            extra={
+                "target_fullname": event.data["object_attributes"]["target"][
+                    "path_with_namespace"
+                ],
+                "mr_id": merge_request_id,
+                "fork_fullname": src_fullname,
+            },
+        )
+        return
 
     repo_config = await get_repo_config(gl_src, src_fullname, refresh=True)
 
@@ -189,7 +221,7 @@ async def sync_mr(event, gl_src, gl_dest, dest_user, *args, **kwawrgs):
         log.info(f"[{src_fullname}]: {target_ref} already up-to-date")
         return
 
-    packfile = await fetch_pack(src_repo_url, want_sha, have_shas)
+    packfile = await fetch_pack(src_repo_url, want_sha, have_shas, **src_creds)
 
     log.info(f"[{src_fullname}]: mirroring {from_sha} -> {want_sha}")
     await send_pack(
