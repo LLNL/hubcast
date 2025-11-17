@@ -69,6 +69,7 @@ async def sync_branch(event, gl_src, gl_dest, dest_user, *args, **kwargs):
     target_ref = event.data["ref"]
 
     # skip branches from push events that are also merge requests
+    # TODO this needs the src creds if necessary
     src_refs = await ls_remote(src_repo_url)
     pull_refs = [
         src_refs[ref] for ref in src_refs if ref.startswith("refs/merge-requests/")
@@ -87,9 +88,12 @@ async def sync_branch(event, gl_src, gl_dest, dest_user, *args, **kwargs):
         "src_forge": "gitlab",
     }
     await gl_dest.set_webhook(dest_fullname, webhook_data)
+    dest_token = await gl_dest.auth.authenticate_installation(dest_user)
 
     # sync commits from source -> destination
-    dest_refs = await ls_remote(dest_remote_url)
+    dest_refs = await ls_remote(
+        dest_remote_url, username=dest_user, password=dest_token
+    )
     have_shas = dest_refs.values()
     from_sha = dest_refs.get(target_ref) or ("0" * 40)
 
@@ -98,8 +102,6 @@ async def sync_branch(event, gl_src, gl_dest, dest_user, *args, **kwargs):
         return
 
     packfile = await fetch_pack(src_repo_url, want_sha, have_shas)
-
-    dest_token = await gl_dest.auth.authenticate_installation(dest_user)
 
     log.info(f"[{src_fullname}]: mirroring {from_sha} -> {want_sha}")
     await send_pack(
@@ -123,12 +125,13 @@ async def remove_branch(event, gl_src, gl_dest, dest_user, *args, **kwargs):
 
     dest_fullname = f"{repo_config.dest_org}/{repo_config.dest_name}"
     dest_remote_url = f"{gl_dest.instance_url}/{dest_fullname}.git"
+    dest_token = await gl_dest.auth.authenticate_installation(dest_user)
 
-    dest_refs = await ls_remote(dest_remote_url)
+    dest_refs = await ls_remote(
+        dest_remote_url, username=dest_user, password=dest_token
+    )
     head_sha = dest_refs.get(target_ref)
     null_sha = "0" * 40
-
-    dest_token = await gl_dest.auth.authenticate_installation(dest_user)
 
     log.info(f"[{src_fullname}]: deleting {target_ref}")
     await send_pack(
@@ -173,9 +176,12 @@ async def sync_mr(event, gl_src, gl_dest, dest_user, *args, **kwawrgs):
 
     dest_fullname = f"{repo_config.dest_org}/{repo_config.dest_name}"
     dest_remote_url = f"{gl_dest.instance_url}/{dest_fullname}.git"
+    dest_token = await gl_dest.auth.authenticate_installation(dest_user)
 
     # sync commits from source -> destination
-    dest_refs = await ls_remote(dest_remote_url)
+    dest_refs = await ls_remote(
+        dest_remote_url, username=dest_user, password=dest_token
+    )
     have_shas = dest_refs.values()
     from_sha = dest_refs.get(target_ref) or ("0" * 40)
 
@@ -184,8 +190,6 @@ async def sync_mr(event, gl_src, gl_dest, dest_user, *args, **kwawrgs):
         return
 
     packfile = await fetch_pack(src_repo_url, want_sha, have_shas)
-
-    dest_token = await gl_dest.auth.authenticate_installation(dest_user)
 
     log.info(f"[{src_fullname}]: mirroring {from_sha} -> {want_sha}")
     await send_pack(
@@ -222,12 +226,13 @@ async def remove_mr(event, gl_src, gl_dest, dest_user, *args, **kwawrgs):
 
     dest_fullname = f"{repo_config.dest_org}/{repo_config.dest_name}"
     dest_remote_url = f"{gl_dest.instance_url}/{dest_fullname}.git"
+    dest_token = await gl_dest.auth.authenticate_installation(dest_user)
 
-    dest_refs = await ls_remote(dest_remote_url)
+    dest_refs = await ls_remote(
+        dest_remote_url, username=dest_user, password=dest_token
+    )
     head_sha = dest_refs.get(target_ref)
     null_sha = "0" * 40
-
-    dest_token = await gl_dest.auth.authenticate_installation(dest_user)
 
     log.info(f"[{src_fullname}]: deleting {target_ref}")
     await send_pack(
