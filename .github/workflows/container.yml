@@ -21,16 +21,10 @@ jobs:
           username: ${{ github.actor }}
           password: ${{ secrets.GITHUB_TOKEN }}
 
-      - name: Tag Metadata for Container
-        uses: docker/metadata-action@c1e51972afc2121e065aed6d45c65596fe445f3f
-        id: metadata
-        with:
-          images: ghcr.io/${{ github.repository }}
-
       - name: Build and push image
         uses: docker/build-push-action@263435318d21b8e681c14492fe198d362a7d2c83
         with:
           context: .
           platforms: linux/amd64,linux/arm64
           push: ${{ github.ref == 'refs/heads/main' }}
-          tags: ${{ steps.metadata.outputs.tags }}
+          tags: ghcr.io/${{ github.repository }}:latest
