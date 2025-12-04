@@ -2,8 +2,8 @@ import logging
 from typing import Dict
 
 from hubcast.clients.github import GitHubClient
+from hubcast.clients.github.client import InvalidConfigYAMLError
 from hubcast.repos.config import RepoConfig
-from src.hubcast.clients.github.client import InvalidConfigYAMLError
 
 config_cache = dict()
 log = logging.getLogger(__name__)
