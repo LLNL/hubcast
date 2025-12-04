@@ -67,7 +67,7 @@ async def sync_branch(event, gh, gl, gl_user, *arg, **kwargs):
 
     # sync commits from GitHub -> GitLab
     gl_refs = await ls_remote(dest_remote_url)
-    have_shas = gl_refs.values()
+    have_shas = set(gl_refs.values())
     from_sha = gl_refs.get(target_ref) or ("0" * 40)
 
     if want_sha in have_shas:
@@ -164,7 +164,7 @@ async def sync_pr(pull_request, gh, gl, gl_user):
     dest_remote_url = f"{gl.instance_url}/{dest_fullname}.git"
 
     gl_refs = await ls_remote(dest_remote_url)
-    have_shas = gl_refs.values()
+    have_shas = set(gl_refs.values())
     from_sha = gl_refs.get(target_ref) or ("0" * 40)
 
     if want_sha in have_shas:
