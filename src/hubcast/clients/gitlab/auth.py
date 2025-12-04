@@ -117,9 +117,9 @@ class GitLabSingleUserAuthenticator:
     The token should have the scopes defined in GL_SCOPES for the repos Hubcast will access.
     """
 
-    def __init__(self, token: str):
-        self.token = token
+    def __init__(self, access_token: str):
+        self.access_token = access_token
 
     async def authenticate_user(self, username: str, *args, **kwargs) -> str:
         """Returns the pre-configured token. Keeps the same signature as GitLabAuthenticator for compatibility."""
-        return self.token
+        return self.access_token
