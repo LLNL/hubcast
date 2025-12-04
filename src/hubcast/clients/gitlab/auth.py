@@ -108,3 +108,18 @@ class GitLabAuthenticator:
             hour=0, minute=0, second=0, microsecond=0
         )
         return dt.strftime("%Y-%m-%d"), int(dt.timestamp())
+
+
+class GitLabSingleUserAuthenticator:
+    """
+    An authenticator for developers and users without access to a GitLab instance.
+
+    The token should have the scopes defined in GL_SCOPES for the repos Hubcast will access.
+    """
+
+    def __init__(self, token: str):
+        self.token = token
+
+    async def authenticate_user(self, username: str, *args, **kwargs) -> str:
+        """Returns the pre-configured token. Keeps the same signature as GitLabAuthenticator for compatibility."""
+        return self.token

@@ -33,7 +33,8 @@ class GitLabConfig:
         # requester identifies the app making requests, it doesn't
         # perform any auth function but is included in user-agent
         self.requester = env_get("HC_GL_REQUESTER")
-        self.admin_token = env_get("HC_GL_ADMIN_TOKEN")
+        self.token = env_get("HC_GL_TOKEN")
+        self.token_type = env_get("HC_GL_TOKEN_TYPE", default="impersonation")
         self.webhook_secret = env_get("HC_GL_SECRET")
         self.callback_url = env_get("HC_GL_CALLBACK_URL")
 

@@ -64,9 +64,10 @@ def main():
     gl_client_factory = GitLabClientFactory(
         conf.gl.instance_url,
         conf.gl.requester,
-        conf.gl.admin_token,
+        conf.gl.token,
         conf.gl.callback_url,
         conf.gl.webhook_secret,
+        conf.gl.token_type,
     )
 
     gh_handler = GitHubHandler(

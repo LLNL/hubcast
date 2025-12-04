@@ -4,7 +4,7 @@ from typing import Dict
 import aiohttp
 import gidgetlab.aiohttp
 
-from .auth import GitLabAuthenticator
+from .auth import GitLabAuthenticator, GitLabSingleUserAuthenticator
 
 
 class GitLabClientFactory:
@@ -12,12 +12,20 @@ class GitLabClientFactory:
         self,
         instance_url: str,
         requester: str,
-        admin_token: str,
+        token: str,
         callback_url: str,
         webhook_secret: str,
+        token_type: str = "impersonation",
     ):
         self.requester = requester
-        self.auth = GitLabAuthenticator(instance_url, requester, admin_token)
+
+        if token_type == "single":
+            self.auth = GitLabSingleUserAuthenticator(token)
+        elif token_type == "impersonation":
+            self.auth = GitLabAuthenticator(instance_url, requester, token)
+        else:
+            raise ValueError(f"Unknown GitLab token type: {token_type}")
+
         self.instance_url = instance_url
         self.callback_url = callback_url
         self.webhook_secret = webhook_secret
