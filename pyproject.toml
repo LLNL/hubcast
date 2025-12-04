@@ -7,12 +7,12 @@ name = "hubcast"
 version = "0.0.1"
 dependencies = [
     "aiohttp",
+    "aiojobs",
     "cachetools",
     "gidgethub",
     "gidgetlab",
     "repligit[aiohttp]",
     "pyyaml",
-    "aiojobs",
 ]
 authors = [
     { name = "Alec Scott" },
