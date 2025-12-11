@@ -21,6 +21,7 @@ jobs:
       style: ${{ steps.filter.outputs.style }}
       security: ${{ steps.filter.outputs.security }}
       unit-tests: ${{ steps.filter.outputs.unit-tests }}
+      container: ${{ steps.filter.outputs.container }}
     steps:
       - uses: actions/checkout@1af3b93b6815bc44a9784bd300feb67ff0d1eeb3 # @v2
         if: ${{ github.event_name == 'push' }}
@@ -41,6 +42,11 @@ jobs:
               - 'src/**/*'
               - 'pyproject.toml'
               - '.bandit'
+            container:
+              - '.github/**/*'
+              - 'src/**/*'
+              - 'pyproject.toml'
+              - 'Dockerfile'
            # unit-tests:
            #   - '.github/**/*'
            #   - 'src/**/*'
@@ -70,6 +76,14 @@ jobs:
   #   needs: [changes, style, unit-tests]
   #   uses: ./.github/workflows/coverage.yml
 
+  container:
+    if: ${{ needs.changes.outputs.container == 'true' }}
+    needs: [changes, style, security]
+    uses: ./.github/workflows/container.yml
+    permissions:
+      contents: read
+      packages: write
+
   all:
     needs:
      - changes
@@ -77,6 +91,7 @@ jobs:
      - security
      # - unit-tests
      # - coverage
+     - container
     if: always()
     runs-on: ubuntu-latest
     steps:
