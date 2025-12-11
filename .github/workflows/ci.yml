@@ -80,6 +80,9 @@ jobs:
     if: ${{ needs.changes.outputs.container == 'true' }}
     needs: [changes, style, security]
     uses: ./.github/workflows/container.yml
+  permissions:
+    contents: read
+    packages: write
 
   all:
     needs:
