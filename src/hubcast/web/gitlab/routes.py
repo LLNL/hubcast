@@ -73,7 +73,7 @@ async def sync_branch(event, gl_src, gl_dest, dest_user, *args, **kwargs):
     if private_src_repo:
         src_creds = {
             "username": gl_src.requester,
-            "password": await gl_src.auth.authenticate_installation(gl_src.requester),
+            "password": await gl_src.auth.authenticate_user(gl_src.requester),
         }
 
     # skip branches from push events that are also merge requests
@@ -95,7 +95,7 @@ async def sync_branch(event, gl_src, gl_dest, dest_user, *args, **kwargs):
         "src_forge": "gitlab",
     }
     await gl_dest.set_webhook(dest_fullname, webhook_data)
-    dest_token = await gl_dest.auth.authenticate_installation(dest_user)
+    dest_token = await gl_dest.auth.authenticate_user(dest_user)
 
     # sync commits from source -> destination
     dest_refs = await ls_remote(
@@ -132,7 +132,7 @@ async def remove_branch(event, gl_src, gl_dest, dest_user, *args, **kwargs):
 
     dest_fullname = f"{repo_config.dest_org}/{repo_config.dest_name}"
     dest_remote_url = f"{gl_dest.instance_url}/{dest_fullname}.git"
-    dest_token = await gl_dest.auth.authenticate_installation(dest_user)
+    dest_token = await gl_dest.auth.authenticate_user(dest_user)
 
     dest_refs = await ls_remote(
         dest_remote_url, username=dest_user, password=dest_token
@@ -175,7 +175,7 @@ async def sync_mr(event, gl_src, gl_dest, dest_user, *args, **kwawrgs):
     if private_src_repo:
         src_creds = {
             "username": gl_src.requester,
-            "password": await gl_src.auth.authenticate_installation(gl_src.requester),
+            "password": await gl_src.auth.authenticate_user(gl_src.requester),
         }
 
     # merge requests coming from forks are pushed as branches in the form of
@@ -208,7 +208,7 @@ async def sync_mr(event, gl_src, gl_dest, dest_user, *args, **kwawrgs):
 
     dest_fullname = f"{repo_config.dest_org}/{repo_config.dest_name}"
     dest_remote_url = f"{gl_dest.instance_url}/{dest_fullname}.git"
-    dest_token = await gl_dest.auth.authenticate_installation(dest_user)
+    dest_token = await gl_dest.auth.authenticate_user(dest_user)
 
     # sync commits from source -> destination
     dest_refs = await ls_remote(
@@ -258,7 +258,7 @@ async def remove_mr(event, gl_src, gl_dest, dest_user, *args, **kwawrgs):
 
     dest_fullname = f"{repo_config.dest_org}/{repo_config.dest_name}"
     dest_remote_url = f"{gl_dest.instance_url}/{dest_fullname}.git"
-    dest_token = await gl_dest.auth.authenticate_installation(dest_user)
+    dest_token = await gl_dest.auth.authenticate_user(dest_user)
 
     dest_refs = await ls_remote(
         dest_remote_url, username=dest_user, password=dest_token

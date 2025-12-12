@@ -54,7 +54,8 @@ class GitLabClientFactory:
 
 class GitLabSrcClientFactory:
     def __init__(self, instance_url, access_token, requester):
-        self.auth = GitLabAuthenticator(instance_url, access_token)
+        # for source clients we only support single user authentication
+        self.auth = GitLabSingleUserAuthenticator(access_token)
         self.instance_url = instance_url
         self.requester = requester
 
@@ -207,7 +208,7 @@ class GitLabSrcClient:
         self.repo_id = repo_id
 
     async def get_repo_config(self):
-        gl_token = await self.auth.authenticate_installation(self.requester)
+        gl_token = await self.auth.authenticate_user(self.requester)
 
         async with aiohttp.ClientSession() as session:
             gl = gidgetlab.aiohttp.GitLabAPI(
@@ -237,7 +238,7 @@ class GitLabSrcClient:
         # status can be directly mapped from gitlab->gitlab
         payload = {"name": check_name, "target_url": details_url, "state": status}
 
-        gl_token = await self.auth.authenticate_installation(self.requester)
+        gl_token = await self.auth.authenticate_user(self.requester)
 
         async with aiohttp.ClientSession() as session:
             gl = gidgetlab.aiohttp.GitLabAPI(
