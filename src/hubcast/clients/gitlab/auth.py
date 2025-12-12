@@ -112,7 +112,7 @@ class GitLabAuthenticator:
 
 class GitLabSingleUserAuthenticator:
     """
-    An authenticator for developers and users without access to a GitLab instance.
+    An authenticator for developers and users without admin access to a GitLab instance.
 
     The token should have the scopes defined in GL_SCOPES for the repos Hubcast will access.
     """
