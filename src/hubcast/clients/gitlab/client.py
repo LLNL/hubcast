@@ -15,13 +15,13 @@ class GitLabClientFactory:
         token: str,
         callback_url: str,
         webhook_secret: str,
-        token_type: str = "impersonation",
+        token_type: str = "impersonation",  # nosec B107
     ):
         self.requester = requester
 
-        if token_type == "single":
+        if token_type == "single":  # nosec B105
             self.auth = GitLabSingleUserAuthenticator(token)
-        elif token_type == "impersonation":
+        elif token_type == "impersonation":  # nosec B105
             self.auth = GitLabAuthenticator(instance_url, requester, token)
         else:
             raise ValueError(f"Unknown GitLab token type: {token_type}")
