@@ -27,7 +27,7 @@ class TokenCache:
             A function to call in order to generate a new token if the cache
             is stale.
         time_needed: int
-            The length of time a token will be needed. Thus any token that
+            The number of seconds a token will be needed. Thus any token that
             expires during this window should be disregarded and renewed.
         """
         expires, token = self._tokens.get(name, (0, ""))
