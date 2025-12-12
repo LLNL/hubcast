@@ -44,7 +44,6 @@ async def sync_branch(event, gh, gl, gl_user, *arg, **kwargs):
     """Sync the git branch referenced to GitLab."""
     src_repo_url = event.data["repository"]["clone_url"]
     src_fullname = event.data["repository"]["full_name"]
-    private_src_repo = event.data["repository"]["private"]
     src_owner, src_repo_name = src_fullname.split("/")
     want_sha = event.data["head_commit"]["id"]
     target_ref = event.data["ref"]
@@ -79,20 +78,14 @@ async def sync_branch(event, gh, gl, gl_user, *arg, **kwargs):
         )
         return
 
-    src_creds = {}
-    if private_src_repo:
-        src_creds = {
-            "username": gh.requester,  # the username doesn't matter, but can't be empty
-            "password": await gh.auth.authenticate_installation(
-                gh.repo_owner, gh.repo_name
-            ),
-        }
+    gh_token = await gh.auth.authenticate_installation(gh.repo_owner, gh.repo_name)
 
     packfile = await fetch_pack(
         src_repo_url,
         want_sha,
         have_shas,
-        **src_creds,
+        username=gh.requester,  # the username doesn't matter, but can't be empty
+        password=gh_token,
     )
 
     gl_token = await gl.auth.authenticate_user(gl_user)
@@ -171,7 +164,7 @@ async def sync_pr(pull_request, gh, gl, gl_user, src_repo_private):
         target_ref = f"refs/heads/{pull_request['head']['ref']}"
 
     if is_pull_request_fork and src_repo_private:
-        # we cannot use our gitlab token to access a private fork
+        # GitHub apps will not have access to private forks
         log.warning(
             "Cannot sync pull request from private fork",
             extra={
@@ -200,8 +193,11 @@ async def sync_pr(pull_request, gh, gl, gl_user, src_repo_private):
         )
         return
 
-    src_creds = {}
-    if src_repo_private:
+    if is_pull_request_fork and not src_repo_private:
+        # no auth needed for public forks
+        src_creds = {}
+    else:
+        # authenticate if the PR comes from the target repository
         src_creds = {
             "username": gh.requester,  # the username doesn't matter, but can't be empty
             "password": await gh.auth.authenticate_installation(
