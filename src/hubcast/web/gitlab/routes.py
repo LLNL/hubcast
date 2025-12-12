@@ -101,7 +101,7 @@ async def sync_branch(event, gl_src, gl_dest, dest_user, *args, **kwargs):
     dest_refs = await ls_remote(
         dest_remote_url, username=dest_user, password=dest_token
     )
-    have_shas = dest_refs.values()
+    have_shas = set(dest_refs.values())
     from_sha = dest_refs.get(target_ref) or ("0" * 40)
 
     if want_sha in have_shas:
@@ -214,7 +214,7 @@ async def sync_mr(event, gl_src, gl_dest, dest_user, *args, **kwawrgs):
     dest_refs = await ls_remote(
         dest_remote_url, username=dest_user, password=dest_token
     )
-    have_shas = dest_refs.values()
+    have_shas = set(dest_refs.values())
     from_sha = dest_refs.get(target_ref) or ("0" * 40)
 
     if want_sha in have_shas:
