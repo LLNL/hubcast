@@ -27,4 +27,4 @@ jobs:
           context: .
           platforms: linux/amd64,linux/arm64
           push: ${{ github.ref == 'refs/heads/main' }}
-          tags: ghcr.io/llnl/hubcast:latest
+          tags: ghcr.io/${{ github.repository }}
